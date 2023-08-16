@@ -1,0 +1,16 @@
+layout:
+
+1. child -> parent: min, pref & max size + fixed aspect ratio
+2. parent -> child: definitive size
+
+improve:
+
+too verbose -> good defaults + builder pattern
+layout weird -> two layout passes with clearly defined behaviour
+response impl suboptimal -> find better solution, maybe ui events?
+dynamic ui slapped ontop -> bake dynamic ui building deep into the system
+
+keep:
+
+modularity
+general borrowing + lensing mechanics
