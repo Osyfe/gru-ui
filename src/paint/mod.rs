@@ -1,7 +1,11 @@
-use gru_misc::{math::{Vec2, Rect}, color::Color, text_sdf::{Font, AtlasBuilder, Align, Layout}};
+pub mod style;
+
+use gru_misc::{math::{Vec2, Rect}, text_sdf::{Font, AtlasBuilder, Align, Layout}};
 
 pub const TEXTURE_SIZE: u32 = 1024;
 const TEXTURE_PADDING: u32 = 5;
+
+pub use gru_misc::color::Color;
 
 pub struct Vertex
 {
@@ -52,11 +56,6 @@ impl Painter
             indices: Vec::new(),
             new: true
         }
-    }
-
-    pub fn set_offset(&mut self, offset: Vec2)
-    {
-        self.origin = offset;
     }
 
     pub fn add_offset(&mut self, offset: Vec2)
@@ -126,6 +125,12 @@ impl Painter
     {
         self.add_glyphs(text);
         self.text.as_ref().unwrap().atlas().width(text) * size
+    }
+
+    pub fn text_height(&mut self, text: &str, layout: Layout) -> u32
+    {
+        self.add_glyphs(text);
+        self.text.as_ref().unwrap().atlas().height(text, layout)
     }
 
     fn add_glyphs(&mut self, text: &str)

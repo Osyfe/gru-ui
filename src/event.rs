@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 
 use crate::math::Vec2;
 
@@ -128,9 +128,10 @@ pub enum Key
 
 impl Display for Key
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
 	{
-        let string = match self {
+        let string = match self
+        {
             Key::Key1 => "1",
             Key::Key2 => "2",
             Key::Key3 => "3",
@@ -240,19 +241,19 @@ impl Display for Key
 }
 
 #[derive(Clone, PartialEq)]
-pub enum Event
+pub enum HardwareEvent
 {
     RawMouseDelta(Vec2),
     PointerMoved { pos: Vec2, delta: Vec2 },
     PointerClicked { pos: Vec2, button: MouseButton, pressed: bool },
     PointerGone,
     CloseWindow,
-    Scroll { dx: f32, dy: f32 },
+    Scroll { pos: Vec2, delta: Vec2 },
     Key { key: Key, pressed: bool },
     Char(char)
 }
 
-impl Event
+impl HardwareEvent
 {
     pub(crate) fn scale(&mut self, scale: f32) -> &mut Self
     {
@@ -283,13 +284,13 @@ impl Event
 
 pub struct EventPod
 {
-    pub event: Event,
+    pub event: HardwareEvent,
     pub used: bool
 }
 
 impl EventPod
 {
-    pub(crate) fn new(event: Event) -> Self
+    pub(crate) fn new(event: HardwareEvent) -> Self
     {
         Self
         {
@@ -297,4 +298,16 @@ impl EventPod
             used: false
         }
     }
+}
+
+pub enum LogicEvent<T>
+{
+    Clicked(T, MouseButton),
+    Pressed(T, Key, bool)
+}
+
+pub enum Event<T>
+{
+    Hardware(EventPod),
+    Logic(LogicEvent<T>)
 }

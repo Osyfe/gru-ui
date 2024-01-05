@@ -1,8 +1,14 @@
+[workspace]
+members = ["gru-ui-derive"]
+
 [package]
 name = "gru-ui"
 version = "0.1.0"
+authors = ["Jannik Fehre"]
 edition = "2021"
 publish = false
 
 [dependencies]
+gru-ui-derive = { path = "gru-ui-derive" }
 gru-misc = { path = "../gru-misc", features = ["math", "text_sdf", "color"] }
+copypasta = "0.10.0"

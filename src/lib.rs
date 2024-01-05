@@ -1,50 +1,60 @@
-pub mod layout;
+pub mod math { pub use gru_misc::math::{Vec2, Rect}; }
+pub mod text { pub use gru_misc::text_sdf::{Font, Align, Layout}; }
 pub mod event;
-pub mod widget;
 pub mod paint;
-pub mod style;
+pub mod widget;
+pub mod lens;
+
+use paint::style;
+use widget::*;
 
 const DEFAULT_SCALE: f32 = 20.0;
 
-pub use gru_misc::{math, text_sdf as text, color};
-
-pub struct Request<'a>
+pub struct Request
 {
-    widget: &'a mut bool,
-    layout: &'a mut bool,
-    paint: &'a mut bool
+    widget: bool,
+    layout: bool,
+    paint: bool
 }
 
-impl Request<'_>
+impl Request
 {
     pub fn widget(&mut self)
     {
-        *self.widget = true;
-        *self.layout = true;
-        *self.paint = true;
+        self.widget = true;
+        self.layout = true;
+        self.paint = true;
     }
 
     pub fn layout(&mut self)
     {
-        *self.layout = true;
-        *self.paint = true;
+        self.layout = true;
+        self.paint = true;
     }
 
     pub fn paint(&mut self)
     {
-        *self.paint = true;
+        self.paint = true;
+    }
+
+    fn reset(&mut self)
+    {
+        self.widget = false;
+        self.layout = false;
+        self.paint = false;
     }
 }
 
-pub struct EventCtx<'a, 'b>
+pub struct EventCtx<'a, L>
 {
-    pub request: &'a mut Request<'b>,
-    pub event: &'a mut event::EventPod
+    pub request: &'a mut Request,
+    pub event: &'a mut event::EventPod,
+    events: &'a mut Vec<event::Event<L>>
 }
 
-pub struct UpdateCtx<'a, 'b>
+pub struct UpdateCtx<'a>
 {
-    pub request: &'a mut Request<'b>
+    pub request: &'a mut Request
 }
 
 pub struct WidgetComputeCtx
@@ -64,50 +74,47 @@ pub struct LayoutComputeCtx<'a>
 
 pub struct PaintCtx<'a>
 {
-    painter: &'a mut paint::Painter
+    painter: &'a mut paint::Painter,
+    style: &'a mut style::StyleSet,
+    state: interact::WidgetState
+}
+
+impl<'a, L> EventCtx<'a, L>
+{
+    #[inline] pub fn emit(&mut self, event: event::LogicEvent<L>) { self.events.push(event::Event::Logic(event)); }
 }
 
 impl<'a> LayoutInquireCtx<'a>
 {
     #[inline] pub fn text_with(&mut self, text: &str, size: f32) -> f32 { self.painter.text_width(text, size) }
+    #[inline] pub fn text_height(&mut self, text: &str, layout: text::Layout) -> u32 { self.painter.text_height(text, layout) }
 }
 
 impl<'a> LayoutComputeCtx<'a>
 {
     #[inline] pub fn does_not_fit(&mut self) { *self.fits = false; }
     #[inline] pub fn text_with(&mut self, text: &str, size: f32) -> f32 { self.painter.text_width(text, size) }
+    #[inline] pub fn text_height(&mut self, text: &str, layout: text::Layout) -> u32 { self.painter.text_height(text, layout) }
 }
 
 impl<'a> PaintCtx<'a>
 {
     #[inline] pub fn add_offset(&mut self, offset: math::Vec2) { self.painter.add_offset(offset); }
-    #[inline] pub fn draw_rect(&mut self, rect: math::Rect, color: color::Color) { self.painter.draw_rect(rect, color); }
-    #[inline] pub fn draw_rhombus(&mut self, rect: math::Rect, color: color::Color) { self.painter.draw_rhombus(rect, color); }
-    #[inline] pub fn draw_text(&mut self, rect: math::Rect, text: &str, size: f32, align: text::Align, auto_wrap: bool, color: color::Color) { self.painter.draw_text(rect, text, size, align, auto_wrap, color); }
+    #[inline] pub fn draw_rect(&mut self, rect: math::Rect, color: paint::Color) { self.painter.draw_rect(rect, color); }
+    #[inline] pub fn draw_rhombus(&mut self, rect: math::Rect, color: paint::Color) { self.painter.draw_rhombus(rect, color); }
+    #[inline] pub fn draw_text(&mut self, rect: math::Rect, text: &str, size: f32, align: text::Align, auto_wrap: bool, color: paint::Color) { self.painter.draw_text(rect, text, size, align, auto_wrap, color); }
 }
 
-pub trait Widget<T>
+pub trait Widget<T, E>
 {
-    fn event(&mut self, ctx: &mut EventCtx, data: &mut T);
+    fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T);
     fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T);
     fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T);
-    fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> layout::SizeWish;
-    fn layout_compute(&mut self, ctx: &mut LayoutComputeCtx, data: &T, size: math::Vec2);
-    fn paint(&mut self, ctx: &mut PaintCtx, data: &T, style: &style::StyleSet);
+    fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> math::Vec2;
+    fn layout_compute(&mut self, ctx: &mut LayoutComputeCtx, data: &T, size: math::Vec2) -> math::Vec2;
+    fn paint(&mut self, ctx: &mut PaintCtx, data: &T);
+    fn respond(&mut self, data: &mut T, button: Option<event::MouseButton>) -> bool; //update
 }
-
-macro_rules! impl_event_empty { () => { #[inline] fn event(&mut self, _: &mut EventCtx, _: &mut T) {} } }
-macro_rules! impl_update_empty { () => { #[inline] fn update(&mut self, _: &mut UpdateCtx, _: &mut T) {} } }
-macro_rules! impl_widget_compute_empty { () => { #[inline] fn widget_compute(&mut self, _: &mut WidgetComputeCtx, _: &mut T) {} } }
-//macro_rules! impl_layout_inquire_empty { () => { #[inline] fn layout_inquire(&mut self, _: &mut LayoutInquireCtx, _: &T) {} } }
-macro_rules! impl_layout_compute_empty { () => { #[inline] fn layout_compute(&mut self, _: &mut LayoutComputeCtx, _: &T, _: Vec2) {} } }
-macro_rules! impl_paint_empty { () => { #[inline] fn paint(&mut self, _: &mut PaintCtx, _: &mut T, _: &StyleSet) {} } }
-pub(crate) use impl_event_empty;
-pub(crate) use impl_update_empty;
-pub(crate) use impl_widget_compute_empty;
-//pub(crate) use impl_layout_inquire_empty;
-pub(crate) use impl_layout_compute_empty;
-pub(crate) use impl_paint_empty;
 
 #[derive(Clone, PartialEq)]
 pub struct UiConfig
@@ -117,32 +124,40 @@ pub struct UiConfig
     pub display_scale_factor: f32
 }
 
-pub struct Frame<'a>
+pub struct Frame<'a, E>
 {
     pub fits: bool,
-    pub events: &'a mut [event::EventPod],
-    pub paint: paint::Frame<'a>
+    pub events: &'a mut [event::Event<E>],
+    pub paint: paint::Frame<'a>,
+    pub request: &'a mut Request
 }
 
-pub struct Ui<'a, T: 'a>
+pub struct Ui<'a, T: 'a, L>
 {
-    widget: Box<dyn Widget<T> + 'a>,
+    widget: Box<dyn Widget<T, L> + 'a>,
     config: Option<UiConfig>,
-    events: Vec<event::EventPod>,
+    request: Request,
+    events: Vec<event::Event<L>>,
     painter: paint::Painter,
     style: style::StyleSet
 }
 
-impl<'a, T: 'a> Ui<'a, T>
+impl<'a, T: 'a, E> Ui<'a, T, E>
 {
-    pub fn new<W: Widget<T> + 'a>(font: text::Font, widget: W) -> Self
+    pub fn new<W: Widget<T, E> + 'a>(font: text::Font, widget: W) -> Self
     {
         let widget = Box::new(widget);
         let config = None;
+        let request = Request { widget: true, layout: true, paint: true };
         let events = Vec::new();
         let painter = paint::Painter::new(font);
         let style = Default::default();
-        Self { widget, config, events, painter, style }
+        Self { widget, config, request, events, painter, style }
+    }
+
+    pub fn request(&mut self) -> &mut Request
+    {
+        &mut self.request
     }
 
     pub fn style(&mut self) -> &mut style::StyleSet
@@ -150,13 +165,11 @@ impl<'a, T: 'a> Ui<'a, T>
         &mut self.style
     }
 
-    pub fn frame<'b>(&mut self, config: UiConfig, data: &mut T, events: impl Iterator<Item = &'b event::Event>) -> Frame
+    pub fn frame<'b>(&mut self, config: UiConfig, data: &mut T, events: impl Iterator<Item = &'b event::HardwareEvent>) -> Frame<E>
     {
-        let (mut update_widget, mut update_layout, mut update_paint) = (false, false, false);
-        let mut request = Request { widget: &mut update_widget, layout: &mut update_layout, paint: &mut update_paint };
         //config
         let config = Some(config);
-        if self.config != config { request.layout(); }
+        if self.config != config { self.request.layout(); }
         self.config = config;
         let config = self.config.as_ref().unwrap();
         let scale = config.scale * config.display_scale_factor * DEFAULT_SCALE;
@@ -168,48 +181,50 @@ impl<'a, T: 'a> Ui<'a, T>
             for event in events
             {
                 let mut event = event::EventPod::new(event.clone());
-                let mut ctx = EventCtx { request: &mut request, event: &mut event };
+                let mut ctx = EventCtx { request: &mut self.request, event: &mut event , events: &mut self.events };
 
                 ctx.event.event.scale(1.0 / scale);
                 self.widget.event(&mut ctx, data);
                 ctx.event.event.scale(scale);
 
-                self.events.push(event);
+                self.events.push(event::Event::Hardware(event));
             }
         }
         //update check
         {
-            let mut ctx = UpdateCtx { request: &mut request };
+            let mut ctx = UpdateCtx { request: &mut self.request };
             self.widget.update(&mut ctx, data);
         }
         //compute widgets
-        if update_widget
+        if self.request.widget
         {
             let mut ctx = WidgetComputeCtx { };
             self.widget.widget_compute(&mut ctx, data);
         }
-        //comput layout
+        //compute layout
         let mut fits = true;
-        if update_layout
+        if self.request.layout
         {
             let mut ctx = LayoutInquireCtx { painter: &mut self.painter };
-            let wish = self.widget.layout_inquire(&mut ctx, data);
-            if !wish.fits(size) { fits = false; }
+            let min_size = self.widget.layout_inquire(&mut ctx, data);
+            if min_size.0 < size.0 || min_size.1 < size.1 { fits = false; }
             //size logic
             let mut ctx = LayoutComputeCtx { fits: &mut fits, painter: &mut self.painter };
             self.widget.layout_compute(&mut ctx, data, size);
         }
         //compute painting
-        if update_paint
+        if self.request.paint
         {
             self.painter.clear_frame(scale);
-            let mut ctx = PaintCtx { painter: &mut self.painter };
-            self.widget.paint(&mut ctx, data, &self.style);
+            let mut ctx = PaintCtx { painter: &mut self.painter, style: &mut self.style, state: interact::WidgetState::Cold };
+            self.widget.paint(&mut ctx, data);
         }
 
         //return
+        self.request.reset();
         let events = &mut self.events;
         let paint = self.painter.get_frame();
-        Frame { fits, events, paint }
+        let request = &mut self.request;
+        Frame { fits, events, paint, request }
     }
 }

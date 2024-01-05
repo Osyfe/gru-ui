@@ -1,16 +1,25 @@
 layout:
 
-1. child -> parent: min, pref & max size + fixed aspect ratio
-2. parent -> child: definitive size
+1. child -> parent: min size
+2. parent -> child: allocated size
+3. child -> parent: render size
 
 improve:
 
 too verbose -> good defaults + builder pattern
 layout weird -> two layout passes with clearly defined behaviour
 response impl suboptimal -> find better solution, maybe ui events?
-dynamic ui slapped ontop -> bake dynamic ui building deep into the system
+dynamic ui slapped ontop -> bake dynamic ui building into the system
+multiple root widgets awkward -> one master widget and combination widgets
 
 keep:
 
 modularity
 general borrowing + lensing mechanics
+
+     #####
+
+fix/add:
+
+- systematic "does not fit" checking
+- widgets: empty, split, watch, folder, style
