@@ -167,6 +167,14 @@ impl<T, E, W: Widget<T, E>> Align<T, E, W>
         self.vertical = layout;
         self
     }
+    
+    pub fn left(mut self) -> Self { self.horizontal(AlignLayout::Front) }
+    pub fn right(mut self) -> Self { self.horizontal(AlignLayout::Back) }
+    pub fn up(mut self) -> Self { self.vertical(AlignLayout::Front) }
+    pub fn down(mut self) -> Self { self.vertical(AlignLayout::Back) }
+    pub fn center_h(mut self) -> Self { self.horizontal(AlignLayout::Mid) }
+    pub fn center_v(mut self) -> Self { self.vertical(AlignLayout::Mid) }
+    pub fn center(mut self) -> Self { self.center_h().center_v() }
 }
 
 pub struct Padding<T, E, W: Widget<T, E>>
