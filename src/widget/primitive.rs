@@ -546,7 +546,7 @@ impl<'a, E> Widget<String, E> for Edit<'a, E>
         {
             use copypasta::{ClipboardContext, ClipboardProvider};
             let mut ctx = ClipboardContext::new().unwrap();
-            for ch in ctx.get_contents().unwrap().chars().filter(|ch| (self.filter)(*ch)) { data.push(ch); }
+            if let Ok(contents) = ctx.get_contents() { for ch in contents.chars().filter(|ch| (self.filter)(*ch)) { data.push(ch); } }
         }
         true
     }

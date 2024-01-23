@@ -46,7 +46,10 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Fix<T, E, W>
     {
         if let Some(width) = self.width { size.0 = width; }
         if let Some(height) = self.height { size.1 = height; }
-        self.child.layout_compute(ctx, data, size)
+        size = self.child.layout_compute(ctx, data, size);
+        if let Some(width) = self.width { size.0 = width; }
+        if let Some(height) = self.height { size.1 = height; }
+        size
     }
 
     impl_paint_child!(T);
