@@ -58,7 +58,7 @@ impl<T: Borrow<str>, E> Widget<T, E> for Label<T>
     #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
     {
-        let width = ctx.text_with(data.borrow(), self.text_size);
+        let width = ctx.text_width(data.borrow(), self.text_size);
         self.size = Vec2(width, self.text_size);
         self.size
     }

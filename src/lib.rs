@@ -86,14 +86,14 @@ impl<'a, L> EventCtx<'a, L>
 
 impl<'a> LayoutInquireCtx<'a>
 {
-    #[inline] pub fn text_with(&mut self, text: &str, size: f32) -> f32 { self.painter.text_width(text, size) }
+    #[inline] pub fn text_width(&mut self, text: &str, size: f32) -> f32 { self.painter.text_width(text, size) }
     #[inline] pub fn text_height(&mut self, text: &str, layout: text::Layout) -> u32 { self.painter.text_height(text, layout) }
 }
 
 impl<'a> LayoutComputeCtx<'a>
 {
     #[inline] pub fn does_not_fit(&mut self) { *self.fits = false; }
-    #[inline] pub fn text_with(&mut self, text: &str, size: f32) -> f32 { self.painter.text_width(text, size) }
+    #[inline] pub fn text_width(&mut self, text: &str, size: f32) -> f32 { self.painter.text_width(text, size) }
     #[inline] pub fn text_height(&mut self, text: &str, layout: text::Layout) -> u32 { self.painter.text_height(text, layout) }
 }
 

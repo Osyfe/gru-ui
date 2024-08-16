@@ -79,8 +79,8 @@ impl<T, E, W1: Widget<T, E>, W2: Widget<T, E>> Widget<T, E> for And<T, E, W1, W2
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
     {
-        self.child1.event(ctx, data);
         self.child2.event(ctx, data);
+        self.child1.event(ctx, data);
     }
 
     #[inline]
@@ -123,8 +123,8 @@ impl<T, E, W1: Widget<T, E>, W2: Widget<T, E>> Widget<T, E> for And<T, E, W1, W2
     #[inline]
     fn respond(&mut self, data: &mut T, button: Option<MouseButton>) -> bool
     {
-        let update1 = self.child1.respond(data, button);
-        let update2 = self.child2.respond(data, button);
+        let update2 = self.child1.respond(data, button);
+        let update1 = self.child2.respond(data, button);
         update1 || update2
     }
 }
@@ -146,7 +146,7 @@ impl<'a, T, E> Widget<T, E> for Set<'a, T, E>
 {
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
     {
-        for child in &mut self.childs { child.event(ctx, data); }
+        for child in self.childs.iter_mut().rev() { child.event(ctx, data); }
     }
 
     fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T)
@@ -181,7 +181,7 @@ impl<'a, T, E> Widget<T, E> for Set<'a, T, E>
     fn respond(&mut self, data: &mut T, button: Option<MouseButton>) -> bool
     {
         let mut update = false;
-        for child in &mut self.childs { update |= child.respond(data, button); }
+        for child in self.childs.iter_mut().rev() { update |= child.respond(data, button); }
         update
     }
 }
