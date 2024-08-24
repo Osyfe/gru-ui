@@ -132,12 +132,12 @@ pub struct Frame<'a, E>
     pub request: &'a mut Request
 }
 
-pub struct Ui<'a, T: 'a, L>
+pub struct Ui<'a, T: 'a, E>
 {
-    widget: Box<dyn Widget<T, L> + 'a>,
+    widget: Box<dyn Widget<T, E> + 'a>,
     config: Option<UiConfig>,
     request: Request,
-    events: Vec<event::Event<L>>,
+    events: Vec<event::Event<E>>,
     painter: paint::Painter,
     style: style::StyleSet
 }
