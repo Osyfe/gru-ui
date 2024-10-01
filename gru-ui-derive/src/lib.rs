@@ -25,22 +25,22 @@ pub fn lens_derive(input: TokenStream) -> TokenStream
                         #[derive(Clone, Copy)]
                         pub struct #lens;
 
-                        impl#generics Lens<#name#generics, #ty> for #lens
+                        impl #generics Lens<#name #generics, #ty> for #lens
                         {
                             #[inline]
-                            fn with<A, F: FnOnce(&#ty) -> A>(&mut self, data: &#name#generics, f: F) -> A
+                            fn with<A, F: FnOnce(&#ty) -> A>(&mut self, data: &#name #generics, f: F) -> A
                             {
                                 f(&data.#attribute)
                             }
 
                             #[inline]
-                            fn with_mut<A, F: FnOnce(&mut #ty) -> A>(&mut self, data: &mut #name#generics, f: F) -> A
+                            fn with_mut<A, F: FnOnce(&mut #ty) -> A>(&mut self, data: &mut #name #generics, f: F) -> A
                             {
                                 f(&mut data.#attribute)
                             }
                         }
 
-                        impl#generics #name#generics
+                        impl #generics #name #generics
                         {
                             #[allow(non_upper_case_globals)]
                             pub const #attribute: #lens = #lens;

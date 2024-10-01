@@ -79,9 +79,9 @@ pub struct PaintCtx<'a>
     state: interact::WidgetState
 }
 
-impl<'a, L> EventCtx<'a, L>
+impl<'a, E> EventCtx<'a, E>
 {
-    #[inline] pub fn emit(&mut self, event: event::LogicEvent<L>) { self.events.push(event::Event::Logic(event)); }
+    #[inline] pub fn emit(&mut self, event: event::LogicEvent<E>) { self.events.push(event::Event::Logic(event)); }
 }
 
 impl<'a> LayoutInquireCtx<'a>

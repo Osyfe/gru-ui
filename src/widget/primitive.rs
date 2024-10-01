@@ -155,13 +155,12 @@ impl<T: Borrow<str>> Text<T>
     }
 }
 
-pub struct Check<E>
+pub struct Check
 {
-    size: f32,
-    _phantom: PhantomData<E>
+    size: f32
 }
 
-impl<E> Widget<bool, E> for Check<E>
+impl<E> Widget<bool, E> for Check
 {
     impl_event_empty!(bool);
     impl_update_empty!(bool);
@@ -188,11 +187,11 @@ impl<E> Widget<bool, E> for Check<E>
     }
 }
 
-impl<E> Check<E>
+impl Check
 {
     pub fn new() -> Self
     {
-        Self { size: 1.0, _phantom: PhantomData }
+        Self { size: 1.0 }
     }
 
     pub fn size(mut self, size: f32) -> Self
@@ -202,18 +201,17 @@ impl<E> Check<E>
     }
 }
 
-pub struct Slider<E>
+pub struct Slider
 {
     min: f32,
     max: f32,
     step: f32,
     wish_size: Vec2,
     actual_size: Vec2,
-    dragged: bool,
-    _phantom: PhantomData<E>
+    dragged: bool
 }
 
-impl<E> Widget<f32, E> for Slider<E>
+impl<E> Widget<f32, E> for Slider
 {
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut f32)
@@ -304,11 +302,11 @@ impl<E> Widget<f32, E> for Slider<E>
     impl_respond_empty!(f32);
 }
 
-impl<E> Slider<E>
+impl Slider
 {
     pub fn new() -> Self
     {
-        Self { min: 0.0, max: 1.0, step: 0.1, wish_size: Vec2(DEFAULT_LENGTH, 1.0), actual_size: Vec2::zero(), dragged: false, _phantom: PhantomData }
+        Self { min: 0.0, max: 1.0, step: 0.1, wish_size: Vec2(DEFAULT_LENGTH, 1.0), actual_size: Vec2::zero(), dragged: false }
     }
 
     pub fn min(mut self, min: f32) -> Self
@@ -342,18 +340,17 @@ impl<E> Slider<E>
     }
 }
 
-pub struct VSlider<E>
+pub struct VSlider
 {
     min: f32,
     max: f32,
     step: f32,
     wish_size: Vec2,
     actual_size: Vec2,
-    dragged: bool,
-    _phantom: PhantomData<E>
+    dragged: bool
 }
 
-impl<E> Widget<f32, E> for VSlider<E>
+impl<E> Widget<f32, E> for VSlider
 {
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut f32)
@@ -443,11 +440,11 @@ impl<E> Widget<f32, E> for VSlider<E>
     impl_respond_empty!(f32);
 }
 
-impl<E> VSlider<E>
+impl VSlider
 {
     pub fn new() -> Self
     {
-        Self { min: 0.0, max: 1.0, step: 0.1, wish_size: Vec2(1.0, DEFAULT_LENGTH), actual_size: Vec2::zero(), dragged: false, _phantom: PhantomData }
+        Self { min: 0.0, max: 1.0, step: 0.1, wish_size: Vec2(1.0, DEFAULT_LENGTH), actual_size: Vec2::zero(), dragged: false }
     }
 
     pub fn min(mut self, min: f32) -> Self
@@ -481,17 +478,16 @@ impl<E> VSlider<E>
     }
 }
 
-pub struct Edit<'a, E>
+pub struct Edit<'a>
 {
     active: bool,
     filter: Box<dyn FnMut(char) -> bool + 'a>,
     max_length: Option<usize>,
     wish_size: Vec2,
-    actual_size: Vec2,
-    _phantom: PhantomData<E>
+    actual_size: Vec2
 }
 
-impl<'a, E> Widget<String, E> for Edit<'a, E>
+impl<'a, E> Widget<String, E> for Edit<'a>
 {
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut String)
@@ -552,11 +548,11 @@ impl<'a, E> Widget<String, E> for Edit<'a, E>
     }
 }
 
-impl<'a, E> Edit<'a, E>
+impl<'a> Edit<'a>
 {
     pub fn new() -> Self
     {
-        Self { active: false, filter: Box::new(|_| true), max_length: None, wish_size: Vec2(DEFAULT_LENGTH, 1.0), actual_size: Vec2::zero(), _phantom: PhantomData }
+        Self { active: false, filter: Box::new(|_| true), max_length: None, wish_size: Vec2(DEFAULT_LENGTH, 1.0), actual_size: Vec2::zero() }
     }
 
     pub fn filter(mut self, filter: impl FnMut(char) -> bool + 'a) -> Self
