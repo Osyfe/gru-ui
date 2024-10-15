@@ -45,11 +45,11 @@ impl Request
     }
 }
 
-pub struct EventCtx<'a, L>
+pub struct EventCtx<'a, E>
 {
     pub request: &'a mut Request,
     pub event: &'a mut event::EventPod,
-    events: &'a mut Vec<event::Event<L>>
+    events: &'a mut Vec<event::Event<E>>
 }
 
 pub struct UpdateCtx<'a>

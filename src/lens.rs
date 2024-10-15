@@ -93,20 +93,22 @@ impl<'a, U, T, F: FnMut(&U) -> T + 'a, G: FnMut(&mut U, &T) + 'a> Transform<'a, 
 }
 
 #[derive(Clone, Copy)]
-pub struct LensSlice(pub usize);
+pub struct LensSlice<T>(pub usize, pub T);
 
-impl<U: AsRef<[T]> + AsMut<[T]>, T> Lens<U, T> for LensSlice
+impl<U: AsRef<[T]> + AsMut<[T]>, T> Lens<U, T> for LensSlice<T>
 {
     #[inline]
     fn with<A, F: FnOnce(&T) -> A>(&mut self, data: &U, f: F) -> A
     {
-        f(&data.as_ref()[self.0])
+        let data = data.as_ref().get(self.0).unwrap_or_else(|| &self.1);
+        f(&data)
     }
 
     #[inline]
     fn with_mut<A, F: FnOnce(&mut T) -> A>(&mut self, data: &mut U, f: F) -> A
     {
-        f(&mut data.as_mut()[self.0])
+        let data = data.as_mut().get_mut(self.0).unwrap_or_else(|| &mut self.1);
+        f(data)
     }
 }
 

@@ -250,7 +250,7 @@ impl<E> Widget<f32, E> for Slider
                 {
                     self.dragged = false;
                     ctx.request.paint();
-                }
+                },
                 HardwareEvent::PointerMoved { pos, .. } => if self.dragged
                 {
                     let f = (pos.0 / size.0).max(0.0).min(1.0);
@@ -389,7 +389,7 @@ impl<E> Widget<f32, E> for VSlider
                 {
                     self.dragged = false;
                     ctx.request.paint();
-                }
+                },
                 HardwareEvent::PointerMoved { pos, .. } => if self.dragged
                 {
                     let f = (pos.1 / size.1).max(0.0).min(1.0);
@@ -504,9 +504,9 @@ impl<'a, E> Widget<String, E> for Edit<'a>
             {
                 if key == Key::Back
 				{
-					ctx.event.used = true;
-					data.pop();
-					ctx.request.paint();
+                    ctx.event.used = true;
+                    data.pop();
+                    ctx.request.paint();
 				}
             }
         }
