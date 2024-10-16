@@ -28,6 +28,8 @@ pub trait WidgetExt<T, E>: Widget<T, E> + Sized
     //composition
     fn maybe<'a, F: FnMut(&mut T) -> bool + 'a>(self, f: F) -> compose::Maybe<'a, T, E, Self, F> { compose::Maybe::new(self, f) }
     fn and<W2: Widget<T, E>>(self, other: W2) -> compose::And<T, E, Self, W2> { compose::And::new(self, other) }
+    //dynamic
+    fn watch(self) -> dynamic::Watch<T, E, Self> where T: Clone + PartialEq { dynamic::Watch::new(self) }
 }
 
 impl<T, E, W: Widget<T, E>> WidgetExt<T, E> for W {}
