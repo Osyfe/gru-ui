@@ -327,7 +327,7 @@ impl Slider
         self
     }
 
-    pub fn default_width(mut self, width: f32) -> Self
+    pub fn min_width(mut self, width: f32) -> Self
     {
         self.wish_size.0 = width;
         self
@@ -471,7 +471,7 @@ impl VSlider
         self
     }
 
-    pub fn default_height(mut self, height: f32) -> Self
+    pub fn min_height(mut self, height: f32) -> Self
     {
         self.wish_size.1 = height;
         self

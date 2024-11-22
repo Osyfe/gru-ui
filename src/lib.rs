@@ -165,7 +165,7 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         &mut self.style
     }
 
-    pub fn frame<'b>(&mut self, config: UiConfig, data: &mut T, events: impl Iterator<Item = &'b event::HardwareEvent>) -> Frame<E>
+    pub fn frame<'b>(&mut self, config: UiConfig, data: &mut T, events: impl Iterator<Item = &'b event::HardwareEvent>) -> Frame<'_, E>
     {
         //config
         let config = Some(config);

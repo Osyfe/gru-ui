@@ -24,3 +24,4 @@ fix/add:
 x udpate derive to 2021 edition
 - systematic "does not fit" checking
 - widgets: empty, split, watch, folder, style
+- Lens more methods without return data? (-> e.g. more efficient Transform)
