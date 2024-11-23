@@ -55,10 +55,11 @@ impl<'a, T, E: Clone, W: Widget<T, E>> Widget<T, E> for Response<'a, T, E, W>
                     update = true;
                     ctx.event.used = true;
                 }
-                if hover && !pressed && self.state == WidgetState::Hot
+                if hover && self.state == WidgetState::Hot && !pressed
                 {
                     self.state = WidgetState::Hover;
                     update = true;
+                    ctx.event.used = true;
                     maybe_button = Some(button);
                 }
                 if !pressed && self.child.respond(data, maybe_button) { update = true; }
