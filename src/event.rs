@@ -77,8 +77,6 @@ pub enum Key
     F23,
     F24,
 
-    Snapshot,
-    Scroll,
     Pause,
 
     Insert,
@@ -193,8 +191,6 @@ impl Display for Key
             Key::F22 => "F22",
             Key::F23 => "F23",
             Key::F24 => "F24",
-            Key::Snapshot => "Snapshot",
-            Key::Scroll => "Scroll",
             Key::Pause => "Pause",
             Key::Insert => "INS",
             Key::Home => "Home",

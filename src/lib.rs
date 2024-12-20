@@ -132,6 +132,11 @@ pub struct Frame<'a, E>
     pub request: &'a mut Request
 }
 
+pub struct UiInit
+{
+    painter: paint::Painter
+}
+
 pub struct Ui<'a, T: 'a, E>
 {
     widget: Box<dyn Widget<T, E> + 'a>,
@@ -142,15 +147,26 @@ pub struct Ui<'a, T: 'a, E>
     style: style::StyleSet
 }
 
+impl UiInit
+{
+    pub fn new(font: text::Font) -> Self
+    {
+        Self
+        {
+            painter: paint::Painter::new(font)
+        }
+    }
+}
+
 impl<'a, T: 'a, E> Ui<'a, T, E>
 {
-    pub fn new<W: Widget<T, E> + 'a>(font: text::Font, widget: W) -> Self
+    pub fn new<W: Widget<T, E> + 'a>(init: UiInit, widget: W) -> Self
     {
         let widget = Box::new(widget);
         let config = None;
         let request = Request { widget: true, layout: true, paint: true };
         let events = Vec::new();
-        let painter = paint::Painter::new(font);
+        let painter = init.painter;
         let style = Default::default();
         Self { widget, config, request, events, painter, style }
     }
