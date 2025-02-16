@@ -11,4 +11,4 @@ edition = "2024"
 [dependencies]
 gru-ui-derive = { path = "gru-ui-derive" }
 gru-misc = { path = "../gru-misc", features = ["math", "text_sdf", "color"] }
-copypasta = "0.10.0"
+copypasta = "0.10.1"
