@@ -22,6 +22,19 @@ general borrowing + lensing mechanics
 fix/add:
 
 x udpate derive to 2021 edition
-- systematic "does not fit" checking
-- widgets: empty, split, watch, folder, style
-- Lens more methods without return data? (-> e.g. more efficient Transform)
+? systematic "does not fit" checking
+- response/event/inter widget communication overhaul
+     - respond method replacement
+     - reponse in response -> ?
+- general bool toggle wrapper widget
+- enhance lenses from lensing to general data transformers + flexible lifetimes
+- bifurcation transform -> multiple children widgets attached
+- enum solution
+- maybe -> all features deactivatable individually
+- widget method blocker wrapper (no update etc.)
+- scissoring + scroll widget (counterpart to align)
+- popups/-outs (general layers?)
+- layout reactions (e.g. longer label popup on hover / shorter label when not enough space)
+- textures
+- style options
+- widgets: split, folder
