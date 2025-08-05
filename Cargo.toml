@@ -11,4 +11,4 @@ edition = "2024"
 [dependencies]
 gru-ui-derive = { path = "gru-ui-derive" }
 gru-misc = { git = "https://github.com/Osyfe/gru-misc.git", branch = "release", features = ["math", "text_sdf", "color"] }
-copypasta = "0.10.1"
+copypasta = { version = "0.10.2", default-features = false, features = ["x11"] }
