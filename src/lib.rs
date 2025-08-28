@@ -126,6 +126,7 @@ pub struct UiConfig
 
 pub struct Frame<'a, E>
 {
+    pub px_per_ui_unit: f32,
     pub fits: bool,
     pub events: &'a mut [event::Event<E>],
     pub paint: paint::Frame<'a>,
@@ -241,6 +242,6 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         let events = &mut self.events;
         let paint = self.painter.get_frame();
         let request = &mut self.request;
-        Frame { fits, events, paint, request }
+        Frame { px_per_ui_unit: scale, fits, events, paint, request }
     }
 }
