@@ -118,7 +118,7 @@ impl Painter
         self.new = true;
     }
 
-    pub fn get_frame(&mut self) -> Frame
+    pub fn get_frame<'a>(&'a mut self) -> Frame<'a>
     {
         let new = self.new;
         self.new = false;
