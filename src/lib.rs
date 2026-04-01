@@ -14,7 +14,7 @@ pub struct Request
 {
     widget: bool,
     layout: bool,
-    paint: bool
+    paint: bool,
 }
 
 impl Request
@@ -48,13 +48,13 @@ impl Request
 pub struct EventCtx<'a, E>
 {
     pub request: &'a mut Request,
-    pub event: &'a mut event::EventPod,
-    events: &'a mut Vec<event::Event<E>>
+    pub event: &'a mut event::HardwareEventPod,
+    events: &'a mut Vec<event::Event<E>>,
 }
 
 pub struct UpdateCtx<'a>
 {
-    pub request: &'a mut Request
+    pub request: &'a mut Request,
 }
 
 pub struct WidgetComputeCtx
@@ -63,20 +63,20 @@ pub struct WidgetComputeCtx
 
 pub struct LayoutInquireCtx<'a>
 {
-    painter: &'a mut paint::Painter
+    painter: &'a mut paint::Painter,
 }
 
 pub struct LayoutComputeCtx<'a>
 {
     fits: &'a mut bool,
-    painter: &'a mut paint::Painter
+    painter: &'a mut paint::Painter,
 }
 
 pub struct PaintCtx<'a>
 {
     painter: &'a mut paint::Painter,
     style: &'a mut style::StyleSet,
-    state: interact::WidgetState
+    state: interact::WidgetState,
 }
 
 impl<'a, E> EventCtx<'a, E>
@@ -108,7 +108,6 @@ impl<'a> PaintCtx<'a>
 pub trait Widget<T, E>
 {
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T);
-    fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T);
     fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T);
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> math::Vec2;
     fn layout_compute(&mut self, ctx: &mut LayoutComputeCtx, data: &T, size: math::Vec2) -> math::Vec2;
@@ -121,7 +120,7 @@ pub struct UiConfig
 {
     pub size: math::Vec2,
     pub scale: f32,
-    pub display_scale_factor: f32
+    pub display_scale_factor: f32,
 }
 
 pub struct Frame<'a, E>
@@ -130,7 +129,7 @@ pub struct Frame<'a, E>
     pub fits: bool,
     pub events: &'a mut [event::Event<E>],
     pub paint: paint::Frame<'a>,
-    pub request: &'a mut Request
+    pub request: &'a mut Request,
 }
 
 pub struct UiInit
@@ -145,7 +144,7 @@ pub struct Ui<'a, T: 'a, E>
     request: Request,
     events: Vec<event::Event<E>>,
     painter: paint::Painter,
-    style: style::StyleSet
+    style: style::StyleSet,
 }
 
 impl UiInit
@@ -154,7 +153,7 @@ impl UiInit
     {
         Self
         {
-            painter: paint::Painter::new(font)
+            painter: paint::Painter::new(font),
         }
     }
 }
@@ -168,7 +167,7 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         let request = Request { widget: true, layout: true, paint: true };
         let events = Vec::new();
         let painter = init.painter;
-        let style = Default::default();
+        let style = style::StyleSet::default();
         Self { widget, config, request, events, painter, style }
     }
 
@@ -197,7 +196,7 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
             self.events.clear();
             for event in events
             {
-                let mut event = event::EventPod::new(event.clone());
+                let mut event = event::HardwareEventPod::new(event.clone());
                 let mut ctx = EventCtx { request: &mut self.request, event: &mut event , events: &mut self.events };
 
                 ctx.event.event.scale(1.0 / scale);

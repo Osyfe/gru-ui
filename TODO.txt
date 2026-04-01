@@ -21,10 +21,11 @@ general borrowing + lensing mechanics
 
 ideas:
 
-begin & end new event types -> no update in Widget trait
+no watcher widget, watch calls insert into global watcher constructs -> no update in Widget trait
 response via new event type -> no response in Widget trait
 global "dynamic" widget update -> no compute in Widget
 widget state optionally externally provided -> persistent across ui tree recomputation
+1 input & 1 output generic type + lenses
 
 fix/add:
 

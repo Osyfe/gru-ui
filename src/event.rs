@@ -7,7 +7,7 @@ pub enum MouseButton
 {
     Primary,
     Secondary,
-    Terciary
+    Terciary,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -246,7 +246,7 @@ pub enum HardwareEvent
     CloseWindow,
     Scroll { pos: Vec2, delta: Vec2 },
     Key { key: Key, pressed: bool },
-    Char(char)
+    Char(char),
 }
 
 impl HardwareEvent
@@ -261,7 +261,7 @@ impl HardwareEvent
                 *delta *= scale;
             },
             Self::PointerClicked { pos, .. } => *pos *= scale,
-            _ => {}
+            _ => {},
         }
         self
     }
@@ -272,26 +272,26 @@ impl HardwareEvent
         {
             Self::PointerMoved { pos, .. } => *pos += offset,
             Self::PointerClicked { pos, .. } => *pos += offset,
-            _ => {}
+            _ => {},
         }
         self
     }
 }
 
-pub struct EventPod
+pub struct HardwareEventPod
 {
     pub event: HardwareEvent,
-    pub used: bool
+    pub used: bool,
 }
 
-impl EventPod
+impl HardwareEventPod
 {
     pub(crate) fn new(event: HardwareEvent) -> Self
     {
         Self
         {
             event,
-            used: false
+            used: false,
         }
     }
 }
@@ -299,11 +299,18 @@ impl EventPod
 pub enum LogicEvent<T>
 {
     Clicked(T, MouseButton),
-    Pressed(T, Key, bool)
+    Pressed(T, Key, bool),
 }
 
 pub enum Event<T>
 {
-    Hardware(EventPod),
-    Logic(LogicEvent<T>)
+    Hardware(HardwareEventPod),
+    Logic(LogicEvent<T>),
+}
+
+pub(crate) enum WidgetEvent<'a>
+{
+    BeginFrame,
+    Hardware(&'a mut HardwareEventPod),
+    EndEvents,
 }
