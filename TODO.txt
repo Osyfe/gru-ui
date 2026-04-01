@@ -19,9 +19,16 @@ general borrowing + lensing mechanics
 
      #####
 
+ideas:
+
+begin & end new event types -> no update in Widget trait
+response via new event type -> no response in Widget trait
+global "dynamic" widget update -> no compute in Widget
+widget state optionally externally provided -> persistent across ui tree recomputation
+
 fix/add:
 
-x udpate derive to 2021 edition
+x udpate derive to 2024 edition
 ? systematic "does not fit" checking
 - response/event/inter widget communication overhaul
      - respond method replacement
