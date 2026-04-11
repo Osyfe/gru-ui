@@ -21,11 +21,11 @@ layout:
 
 ideas:
 
-no watcher widget, watch calls insert into global watcher constructs -> no update in Widget trait
-response via new event type -> no response in Widget trait
-global "dynamic" widget update -> no compute in Widget
-widget state optionally externally provided? -> persistent across ui tree recomputation
-1 input & 1 output generic type + lenses/pipes with zip etc.
+- no watcher widget, watch calls insert into global watcher constructs -> no update in Widget trait
+x response via new event type -> no response in Widget trait
+x global "dynamic" widget update -> no compute in Widget
+- widget state optionally externally provided? -> persistent across ui tree recomputation
+- 1 input & 1 output generic type + lenses/pipes with zip etc.
 
 fix/add:
 
