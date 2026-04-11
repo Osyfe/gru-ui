@@ -13,8 +13,6 @@ pub struct Bg<T, E, W: Widget<T, E>>
 impl<T, E, W: Widget<T, E>> Widget<T, E> for Bg<T, E, W>
 {
     impl_event_child!(T);
-    impl_update_child!(T);
-    impl_widget_compute_child!(T);
     impl_layout_inquire_child!(T);
 
     #[inline]
@@ -30,8 +28,6 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Bg<T, E, W>
         ctx.draw_rect(Rect::new_origin(self.size), ctx.style.bg.get(ctx.state));
         self.child.paint(ctx, data);
     }
-
-    impl_respond_child!(T);
 }
 
 impl<T, E, W: Widget<T, E>> Bg<T, E, W>
@@ -52,8 +48,6 @@ pub struct Label<T: Borrow<str>>
 impl<T: Borrow<str>, E> Widget<T, E> for Label<T>
 {
     impl_event_empty!(T);
-    impl_update_empty!(T);
-    impl_widget_compute_empty!(T);
 
     #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
@@ -70,8 +64,6 @@ impl<T: Borrow<str>, E> Widget<T, E> for Label<T>
     {
         ctx.draw_text(Rect::new_origin(self.size), data.borrow(), self.text_size, text::Align::Left, false, ctx.style.text);
     }
-
-    impl_respond_empty!(T);
 }
 
 impl<T: Borrow<str>> Label<T>
@@ -100,8 +92,6 @@ pub struct Text<T: Borrow<str>>
 impl<T: Borrow<str>, E> Widget<T, E> for Text<T>
 {
     impl_event_empty!(T);
-    impl_update_empty!(T);
-    impl_widget_compute_empty!(T);
 
     #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
@@ -125,8 +115,6 @@ impl<T: Borrow<str>, E> Widget<T, E> for Text<T>
     {
         ctx.draw_text(Rect::new_origin(self.actual_size), data.borrow(), self.text_size, self.align, true, ctx.style.text);
     }
-
-    impl_respond_empty!(T);
 }
 
 impl<T: Borrow<str>> Text<T>
@@ -163,8 +151,6 @@ pub struct Check
 impl<E> Widget<bool, E> for Check
 {
     impl_event_empty!(bool);
-    impl_update_empty!(bool);
-    impl_widget_compute_empty!(bool);
 
     #[inline] fn layout_inquire(&mut self, _: &mut LayoutInquireCtx, _: &bool) -> Vec2 { Vec2(self.size, self.size) }
     #[inline] fn layout_compute(&mut self, _: &mut LayoutComputeCtx, _: &bool, _: Vec2) -> Vec2 { Vec2(self.size, self.size) }
@@ -179,12 +165,6 @@ impl<E> Widget<bool, E> for Check
         ctx.painter.draw_rect(Rect::new_size(Vec2(size2, size2), Vec2(size3, size3)), ctx.style.data.get(ctx.state));
         if *data { ctx.painter.draw_rhombus(Rect::new_size(Vec2(size4, size4), Vec2(size5, size5)), ctx.style.top); }
     }
-
-    #[inline]
-    fn respond(&mut self, data: &mut bool, button: Option<MouseButton>) -> bool
-    {
-        if button == Some(MouseButton::Primary) { *data = !*data; true } else { false }
-    }
 }
 
 impl Check
@@ -198,6 +178,41 @@ impl Check
     {
         self.size = size;
         self
+    }
+}
+
+pub struct Toggle<E, W: Widget<bool, E>>
+{
+    child: W,
+    _phantom: PhantomData<E>,
+}
+
+impl<E, W: Widget<bool, E>> Widget<bool, E> for Toggle<E, W>
+{
+    #[inline]
+    fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut bool)
+    {
+        match &ctx.event
+        {
+            WidgetEvent::Synthetic(SyntheticEvent::Clicked(button)) => if *button == Some(MouseButton::Primary) { *data = !*data; },
+            _ => self.child.event(ctx, data),
+        }
+    }
+
+    impl_layout_inquire_child!(bool);
+    impl_layout_compute_child!(bool);
+    impl_paint_child!(bool);
+}
+
+impl<E, W: Widget<bool, E>> Toggle<E, W>
+{
+    pub fn new(widget: W) -> Self
+    {
+        Self
+        {
+            child: widget,
+            _phantom: PhantomData,
+        }
     }
 }
 
@@ -217,9 +232,9 @@ impl<E> Widget<f32, E> for Slider
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut f32)
     {
         let size = self.actual_size;
-        if !ctx.event.used
+        if let WidgetEvent::Hardware(event) = &mut ctx.event && !event.used
         {
-            match ctx.event.event
+            match event.event
             {
                 HardwareEvent::PointerClicked { pos, button: MouseButton::Primary, pressed } =>
                 {
@@ -230,7 +245,7 @@ impl<E> Widget<f32, E> for Slider
                             if pos.0 >= -0.5 && pos.0 <= size.0 + 0.5 //relaxed width bound
                             {
                                 self.dragged = true;
-                                ctx.event.used = true;
+                                event.used = true;
                             }
                             let f = pos.0 / size.0;
                             if f >= 0.0 && f <= 1.0 //strict width bound
@@ -243,7 +258,7 @@ impl<E> Widget<f32, E> for Slider
                     {
                         self.dragged = false;
                         ctx.request.paint();
-                        ctx.event.used = true;
+                        event.used = true;
                     }                    
                 },
                 HardwareEvent::PointerGone => if self.dragged
@@ -268,16 +283,13 @@ impl<E> Widget<f32, E> for Slider
                     {
                         *data = (*data + delta.1 * self.step).max(self.min).min(self.max);
                         ctx.request.paint();
-                        ctx.event.used = true;
+                        event.used = true;
                     }
                 },
                 _ => {}
             }
         }
     }
-
-    impl_update_empty!(f32);
-    impl_widget_compute_empty!(f32);
 
     #[inline] fn layout_inquire(&mut self, _: &mut LayoutInquireCtx, _: &f32) -> Vec2 { self.wish_size }
 
@@ -298,8 +310,6 @@ impl<E> Widget<f32, E> for Slider
         ctx.painter.draw_rect(Rect { min: Vec2(x0, y1), max: Vec2(x3, y2) }, ctx.style.top);
         ctx.painter.draw_rhombus(Rect { min: Vec2(x1, y0), max: Vec2(x2, y3) }, if self.dragged { ctx.style.data.hot } else { ctx.style.data.get(ctx.state) });
     }
-
-    impl_respond_empty!(f32);
 }
 
 impl Slider
@@ -356,9 +366,9 @@ impl<E> Widget<f32, E> for VSlider
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut f32)
     {
         let size = self.actual_size;
-        if !ctx.event.used
+        if let WidgetEvent::Hardware(event) = &mut ctx.event && !event.used
         {
-            match ctx.event.event
+            match event.event
             {
                 HardwareEvent::PointerClicked { pos, button: MouseButton::Primary, pressed } =>
                 {
@@ -369,7 +379,7 @@ impl<E> Widget<f32, E> for VSlider
                             if pos.1 >= -0.5 && pos.1 <= size.1 + 0.5 //relaxed height bound
                             {
                                 self.dragged = true;
-                                ctx.event.used = true;
+                                event.used = true;
                             }
                             let f = pos.1 / size.1;
                             if f >= 0.0 && f <= 1.0 //strict height bound
@@ -382,7 +392,7 @@ impl<E> Widget<f32, E> for VSlider
                     {
                         self.dragged = false;
                         ctx.request.paint();
-                        ctx.event.used = true;
+                        event.used = true;
                     }
                 },
                 HardwareEvent::PointerGone => if self.dragged
@@ -414,9 +424,6 @@ impl<E> Widget<f32, E> for VSlider
         }
     }
 
-    impl_update_empty!(f32);
-    impl_widget_compute_empty!(f32);
-
     #[inline] fn layout_inquire(&mut self, _: &mut LayoutInquireCtx, _: &f32) -> Vec2 { self.wish_size }
 
     #[inline]
@@ -436,8 +443,6 @@ impl<E> Widget<f32, E> for VSlider
         ctx.painter.draw_rect(Rect { min: Vec2(x1, y0), max: Vec2(x2, y3) }, ctx.style.top);
         ctx.painter.draw_rhombus(Rect { min: Vec2(x0, y1), max: Vec2(x3, y2) }, if self.dragged { ctx.style.data.hot } else { ctx.style.data.get(ctx.state) });
     }
-
-    impl_respond_empty!(f32);
 }
 
 impl VSlider
@@ -492,28 +497,40 @@ impl<'a, E> Widget<String, E> for Edit<'a>
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut String)
     {
-        if self.active && !ctx.event.used
+        match &mut ctx.event
         {
-            if let HardwareEvent::Char(ch) = ctx.event.event
+            WidgetEvent::Hardware(event) => if self.active && !event.used
             {
-                ctx.event.used = true;
-                if (self.filter)(ch) && self.max_length.map(|max| data.chars().count() < max).unwrap_or(true) { data.push(ch); }
-                ctx.request.paint();
-            }
-            if let HardwareEvent::Key { key, pressed: true } = ctx.event.event
-            {
-                if key == Key::Back
-				{
-                    ctx.event.used = true;
-                    data.pop();
+                if let HardwareEvent::Char(ch) = event.event
+                {
+                    event.used = true;
+                    if (self.filter)(ch) && self.max_length.map(|max| data.chars().count() < max).unwrap_or(true) { data.push(ch); }
                     ctx.request.paint();
-				}
-            }
+                }
+                if let HardwareEvent::Key { key, pressed: true } = event.event
+                {
+                    if key == Key::Back
+                    {
+                        event.used = true;
+                        data.pop();
+                        ctx.request.paint();
+                    }
+                }
+            },
+            WidgetEvent::Synthetic(SyntheticEvent::Clicked(button)) =>
+            {
+                self.active = button.is_some();
+                if let Some(MouseButton::Secondary) = button
+                {
+                    use copypasta::{ClipboardContext, ClipboardProvider};
+                    let mut ctx = ClipboardContext::new().unwrap();
+                    if let Ok(contents) = ctx.get_contents() { for ch in contents.chars().filter(|ch| (self.filter)(*ch)) { data.push(ch); } }
+                }
+                ctx.request.paint();
+            },
+            _ => {},
         }
     }
-
-    impl_update_empty!(String);
-    impl_widget_compute_empty!(String);
 
     #[inline] fn layout_inquire(&mut self, _: &mut LayoutInquireCtx, _: &String) -> Vec2 { self.wish_size }
 
@@ -532,19 +549,6 @@ impl<'a, E> Widget<String, E> for Edit<'a>
         ctx.painter.draw_rect(rect, ctx.style.data.get(ctx.state));
         let display_data = data.clone() + if self.active && self.max_length.map_or(true, |ml| data.len() < ml) { "_" } else { "" };
         ctx.painter.draw_text(rect, &display_data, size.1, text::Align::Left, false, ctx.style.text);
-    }
-
-    #[inline]
-    fn respond(&mut self, data: &mut String, button: Option<MouseButton>) -> bool
-    {
-        self.active = button.is_some();
-        if let Some(MouseButton::Secondary) = button
-        {
-            use copypasta::{ClipboardContext, ClipboardProvider};
-            let mut ctx = ClipboardContext::new().unwrap();
-            if let Ok(contents) = ctx.get_contents() { for ch in contents.chars().filter(|ch| (self.filter)(*ch)) { data.push(ch); } }
-        }
-        true
     }
 }
 

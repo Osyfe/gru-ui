@@ -48,18 +48,11 @@ impl Request
 pub struct EventCtx<'a, E>
 {
     pub request: &'a mut Request,
-    pub event: &'a mut event::HardwareEventPod,
+    pub event: event::WidgetEvent<'a>,
     events: &'a mut Vec<event::Event<E>>,
 }
 
-pub struct UpdateCtx<'a>
-{
-    pub request: &'a mut Request,
-}
-
-pub struct WidgetComputeCtx
-{
-}
+pub struct WidgetComputeCtx;
 
 pub struct LayoutInquireCtx<'a>
 {
@@ -108,11 +101,9 @@ impl<'a> PaintCtx<'a>
 pub trait Widget<T, E>
 {
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T);
-    fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T);
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> math::Vec2;
     fn layout_compute(&mut self, ctx: &mut LayoutComputeCtx, data: &T, size: math::Vec2) -> math::Vec2;
     fn paint(&mut self, ctx: &mut PaintCtx, data: &T);
-    fn respond(&mut self, data: &mut T, button: Option<event::MouseButton>) -> bool; //update
 }
 
 #[derive(Clone, PartialEq)]
@@ -134,12 +125,13 @@ pub struct Frame<'a, E>
 
 pub struct UiInit
 {
-    painter: paint::Painter
+    painter: paint::Painter,
 }
 
 pub struct Ui<'a, T: 'a, E>
 {
-    widget: Box<dyn Widget<T, E> + 'a>,
+    constructor: Box<dyn FnMut(&mut WidgetComputeCtx, &mut T) -> Box<dyn Widget<T, E> + 'a> + 'a>,
+    root: Option<Box<dyn Widget<T, E> + 'a>>,
     config: Option<UiConfig>,
     request: Request,
     events: Vec<event::Event<E>>,
@@ -160,15 +152,16 @@ impl UiInit
 
 impl<'a, T: 'a, E> Ui<'a, T, E>
 {
-    pub fn new<W: Widget<T, E> + 'a>(init: UiInit, widget: W) -> Self
+    pub fn new<W: FnMut(&mut WidgetComputeCtx, &mut T) -> Box<dyn Widget<T, E> + 'a> + 'a>(init: UiInit, constructor: W) -> Self
     {
-        let widget = Box::new(widget);
+        let constructor = Box::new(constructor);
+        let root = None;
         let config = None;
         let request = Request { widget: true, layout: true, paint: true };
         let events = Vec::new();
         let painter = init.painter;
         let style = style::StyleSet::default();
-        Self { widget, config, request, events, painter, style }
+        Self { constructor, root, config, request, events, painter, style }
     }
 
     pub fn request(&mut self) -> &mut Request
@@ -192,48 +185,54 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         let size = config.size / scale;
 
         //events
+        if let Some(root) = self.root.as_mut()
         {
             self.events.clear();
             for event in events
             {
-                let mut event = event::HardwareEventPod::new(event.clone());
-                let mut ctx = EventCtx { request: &mut self.request, event: &mut event , events: &mut self.events };
+                let mut hardware_event = event::HardwareEventPod::new(event.clone());
+                let mut ctx = EventCtx { request: &mut self.request, event: event::WidgetEvent::Hardware(&mut hardware_event), events: &mut self.events };
 
-                ctx.event.event.scale(1.0 / scale);
-                self.widget.event(&mut ctx, data);
-                ctx.event.event.scale(scale);
+                ctx.event.scale(1.0 / scale);
+                root.event(&mut ctx, data);
+                ctx.event.scale(scale);
 
-                self.events.push(event::Event::Hardware(event));
+                self.events.push(event::Event::Hardware(hardware_event));
             }
         }
+
         //update check
         {
-            let mut ctx = UpdateCtx { request: &mut self.request };
-            self.widget.update(&mut ctx, data);
+            //let mut ctx = UpdateCtx { request: &mut self.request };
+            //self.widget.update(&mut ctx, data);
         }
+
         //compute widgets
         if self.request.widget
         {
-            let mut ctx = WidgetComputeCtx { };
-            self.widget.widget_compute(&mut ctx, data);
+            let mut ctx = WidgetComputeCtx;
+            self.root = Some((self.constructor)(&mut ctx, data));
         }
+        let root = self.root.as_mut().unwrap(); //Ui initialized with request.widget = true, so always Some at this point
+
         //compute layout
         let mut fits = true;
         if self.request.layout
         {
             let mut ctx = LayoutInquireCtx { painter: &mut self.painter };
-            let min_size = self.widget.layout_inquire(&mut ctx, data);
+            let min_size = root.layout_inquire(&mut ctx, data);
             if min_size.0 < size.0 || min_size.1 < size.1 { fits = false; }
             //size logic
             let mut ctx = LayoutComputeCtx { fits: &mut fits, painter: &mut self.painter };
-            self.widget.layout_compute(&mut ctx, data, size);
+            root.layout_compute(&mut ctx, data, size);
         }
+
         //compute painting
         if self.request.paint
         {
             self.painter.clear_frame(scale);
             let mut ctx = PaintCtx { painter: &mut self.painter, style: &mut self.style, state: interact::WidgetState::Cold };
-            self.widget.paint(&mut ctx, data);
+            root.paint(&mut ctx, data);
         }
 
         //return

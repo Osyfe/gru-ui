@@ -251,7 +251,7 @@ pub enum HardwareEvent
 
 impl HardwareEvent
 {
-    pub(crate) fn scale(&mut self, scale: f32) -> &mut Self
+    fn scale(&mut self, scale: f32) -> &mut Self
     {
         match self
         {
@@ -266,7 +266,7 @@ impl HardwareEvent
         self
     }
 
-    pub(crate) fn offset(&mut self, offset: Vec2) -> &mut Self
+    fn offset(&mut self, offset: Vec2) -> &mut Self
     {
         match self
         {
@@ -308,9 +308,32 @@ pub enum Event<T>
     Logic(LogicEvent<T>),
 }
 
-pub(crate) enum WidgetEvent<'a>
+pub enum SyntheticEvent
 {
-    BeginFrame,
+    HoverEnter,
+    HoverLeave,
+    HotEnter,
+    HotLeave,
+    Clicked(Option<MouseButton>),
+}
+
+pub enum WidgetEvent<'a>
+{
     Hardware(&'a mut HardwareEventPod),
-    EndEvents,
+    Synthetic(SyntheticEvent),
+}
+
+impl<'a> WidgetEvent<'a>
+{
+    pub(crate) fn scale(&mut self, scale: f32) -> &mut Self
+    {
+        if let Self::Hardware(event) = self { event.event.scale(scale); }
+        self
+    }
+
+    pub(crate) fn offset(&mut self, offset: Vec2) -> &mut Self
+    {
+        if let Self::Hardware(event) = self { event.event.offset(offset); }
+        self
+    }
 }

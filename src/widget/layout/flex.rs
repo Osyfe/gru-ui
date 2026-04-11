@@ -27,20 +27,10 @@ impl<'a, const ROW: bool, T, E> Widget<T, E> for Flex<'a, ROW, T, E>
         for (i, child) in self.childs.iter_mut().enumerate()
         {
             let offset = if ROW { Vec2(self.child_size_or_offset[i], 0.0) } else { Vec2(0.0, self.child_size_or_offset[i]) };
-            ctx.event.event.offset(-offset);
+            ctx.event.offset(-offset);
             child.event(ctx, data);
-            ctx.event.event.offset(offset);
+            ctx.event.offset(offset);
         }
-    }
-
-    fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T)
-    {
-        for child in &mut self.childs { child.update(ctx, data); }
-    }
-
-    fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T)
-    {
-        for child in &mut self.childs { child.widget_compute(ctx, data); }
     }
 
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
@@ -111,8 +101,6 @@ impl<'a, const ROW: bool, T, E> Widget<T, E> for Flex<'a, ROW, T, E>
             ctx.add_offset(-offset);
         }
     }
-
-    impl_respond_empty!(T);
 }
 
 impl<'a, const ROW: bool, T, E> Flex<'a, ROW, T, E>
