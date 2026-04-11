@@ -184,8 +184,21 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         let scale = config.scale * config.display_scale_factor * DEFAULT_SCALE;
         let size = config.size / scale;
 
+        //compute widgets
+        if self.request.widget
+        {
+            let mut ctx = WidgetComputeCtx;
+            self.root = Some((self.constructor)(&mut ctx, data));
+        }
+        let root = self.root.as_mut().unwrap();
+
+        //update check
+        {
+            //let mut ctx = UpdateCtx { request: &mut self.request };
+            //self.widget.update(&mut ctx, data);
+        }
+
         //events
-        if let Some(root) = self.root.as_mut()
         {
             self.events.clear();
             for event in events
@@ -200,20 +213,6 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
                 self.events.push(event::Event::Hardware(hardware_event));
             }
         }
-
-        //update check
-        {
-            //let mut ctx = UpdateCtx { request: &mut self.request };
-            //self.widget.update(&mut ctx, data);
-        }
-
-        //compute widgets
-        if self.request.widget
-        {
-            let mut ctx = WidgetComputeCtx;
-            self.root = Some((self.constructor)(&mut ctx, data));
-        }
-        let root = self.root.as_mut().unwrap(); //Ui initialized with request.widget = true, so always Some at this point
 
         //compute layout
         let mut fits = true;
