@@ -125,7 +125,7 @@ impl<'a, T, E: Clone, W: Widget<T, E>> Response<'a, T, E, W>
             size: Vec2::zero(),
             state: WidgetState::Cold,
             action: None,
-            event: None
+            event: None,
         }
     }
 
