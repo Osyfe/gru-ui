@@ -1,10 +1,10 @@
 after v1:
      improve:
-          too verbose -> good defaults + builder pattern
-          layout weird -> two layout passes with clearly defined behaviour
-          response impl suboptimal -> find better solution, maybe ui events?
-          dynamic ui slapped ontop -> bake dynamic ui building into the system
-          multiple root widgets awkward -> one master widget and combination widgets
+          x too verbose -> good defaults + builder pattern
+          x layout weird -> two layout passes with clearly defined behaviour
+          x response impl suboptimal -> find better solution, maybe ui events?
+          x dynamic ui slapped ontop -> bake dynamic ui building into the system
+          x multiple root widgets awkward -> one master widget and combination widgets
 
      keep:
           modularity
@@ -16,12 +16,10 @@ after v1:
 
 after v2:
      improve:
-          - lensing/mapping/caching/watcher interwoven with general widgets has too complex interactions -> separate "data" structure the widgets lens/pipe into?
-          - 1 input & 1 output generic type + lenses/pipes with zip etc.
-          - no watcher widget, watch calls insert into global watcher constructs -> no update in Widget trait
+          D lensing/mapping/caching/watcher interwoven with general widgets has too complex interactions -> separate "data" structure where caches live and the widgets lens/pipe into?
           x response via new event type -> no response in Widget trait
           x global "dynamic" widget update -> no compute in Widget
-          - widget state optionally externally provided? -> persistent across ui tree recomputation
+          x update via new event type -> no update in Widget trait
      keep:
           layout seems to work well enough so far
 
@@ -32,15 +30,16 @@ fix/add/ideas:
           x respond method replacement
           - reponse in response -> ?
      - layout & styling from data without dynamic update
-     - toggle widget in widgetext
-     - enhance lenses from lensing to general data transformers + flexible lifetimes (-> pipes?)
-     - bifurcation transform -> multiple children widgets attached (-> pipes?)
-     - enum solution
-     - maybe -> all features deactivatable individually
-     - widget method blocker wrapper (no update etc.) (outdated by separation of concerns plan?)
+     x toggle widget in widgetext -> function on Response
+     - widget state optionally externally provided? -> persistent across ui tree recomputation
+     - enum solution => LensSlice auf Option<T> statt backup dummy data
      - scissoring + scroll widget (counterpart to align)
      - popups/-outs (general layers?)
-     - layout reactions (e.g. longer label popup on hover / shorter label when not enough space)
      - textures
      - style options
      - widgets: split, folder
+
+     - 1 input & 1 output generic type + lenses/pipes with zip etc.
+     - enhance lenses from lensing to general data transformers + flexible lifetimes (-> pipes?)
+     - widget method blocker wrapper (outdated since leaner Widget trait?)
+     - layout reactions (e.g. longer label popup on hover / shorter label when not enough space)

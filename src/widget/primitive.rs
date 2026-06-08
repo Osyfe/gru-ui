@@ -223,7 +223,7 @@ pub struct Slider
     step: f32,
     wish_size: Vec2,
     actual_size: Vec2,
-    dragged: bool
+    dragged: bool,
 }
 
 impl<E> Widget<f32, E> for Slider
@@ -286,7 +286,7 @@ impl<E> Widget<f32, E> for Slider
                         event.used = true;
                     }
                 },
-                _ => {}
+                _ => {},
             }
         }
     }
@@ -357,7 +357,7 @@ pub struct VSlider
     step: f32,
     wish_size: Vec2,
     actual_size: Vec2,
-    dragged: bool
+    dragged: bool,
 }
 
 impl<E> Widget<f32, E> for VSlider
@@ -419,7 +419,7 @@ impl<E> Widget<f32, E> for VSlider
                     }
                     ctx.request.paint();
                 },
-                _ => {}
+                _ => {},
             }
         }
     }
@@ -489,7 +489,7 @@ pub struct Edit<'a>
     filter: Box<dyn FnMut(char) -> bool + 'a>,
     max_length: Option<usize>,
     wish_size: Vec2,
-    actual_size: Vec2
+    actual_size: Vec2,
 }
 
 impl<'a, E> Widget<String, E> for Edit<'a>

@@ -319,6 +319,7 @@ pub enum SyntheticEvent
 
 pub enum WidgetEvent<'a>
 {
+    NewData,
     Hardware(&'a mut HardwareEventPod),
     Synthetic(SyntheticEvent),
 }

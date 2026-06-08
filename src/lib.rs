@@ -192,15 +192,16 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         }
         let root = self.root.as_mut().unwrap();
 
-        //update check
+        self.events.clear();
+
+        //"new data" event
         {
-            //let mut ctx = UpdateCtx { request: &mut self.request };
-            //self.widget.update(&mut ctx, data);
+            let mut ctx = EventCtx { request: &mut self.request, event: event::WidgetEvent::NewData, events: &mut self.events };
+            root.event(&mut ctx, data);
         }
 
         //events
         {
-            self.events.clear();
             for event in events
             {
                 let mut hardware_event = event::HardwareEventPod::new(event.clone());

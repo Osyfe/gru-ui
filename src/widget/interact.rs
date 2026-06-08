@@ -87,7 +87,7 @@ impl<'a, T, E: Clone, W: Widget<T, E>> Widget<T, E> for Response<'a, T, E, W>
                         ctx.emit(LogicEvent::Pressed(tag.clone(), keycode, pressed));
                     }
                 },
-                _ => {}
+                _ => {},
             }
             if update
             {
@@ -139,5 +139,17 @@ impl<'a, T, E: Clone, W: Widget<T, E>> Response<'a, T, E, W>
     {
         self.event = Some(tag);
         self
+    }
+
+    pub(crate) fn map_child<W2: Widget<T, E>>(self, f: impl FnOnce(W) -> W2) -> Response<'a, T, E, W2>
+    {
+        Response
+        {
+            child: f(self.child),
+            size: self.size,
+            state: self.state,
+            action: self.action,
+            event: self.event,
+        }
     }
 }

@@ -62,7 +62,7 @@ pub struct Transform<'a, U, T, F: FnMut(&U) -> T + 'a, G: FnMut(&mut U, &T) + 'a
 {
     f: F,
     g: G,
-    _phantom: PhantomData<&'a (U, T)>
+    _phantom: PhantomData<&'a (U, T)>,
 }
 
 impl<'a, U, T, F: FnMut(&U) -> T + 'a, G: FnMut(&mut U, &T) + 'a> Lens<U, T> for Transform<'a, U, T, F, G>

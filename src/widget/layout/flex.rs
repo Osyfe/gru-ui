@@ -7,7 +7,7 @@ pub enum FlexLayout
     Back,
     PadBetween,
     PadAll,
-    GrowChilds
+    GrowChilds,
 }
 
 pub struct Flex<'a, const ROW: bool, T, E>
@@ -17,7 +17,7 @@ pub struct Flex<'a, const ROW: bool, T, E>
     layout: FlexLayout,
     //layout cache
     child_size_or_offset: Vec<f32>,
-    total_primary_size: f32
+    total_primary_size: f32,
 }
 
 impl<'a, const ROW: bool, T, E> Widget<T, E> for Flex<'a, ROW, T, E>
@@ -73,7 +73,7 @@ impl<'a, const ROW: bool, T, E> Widget<T, E> for Flex<'a, ROW, T, E>
                 let pad = delta / num;
                 (pad / 2.0, pad, pad / 2.0, 0.0)
             },
-            FlexLayout::GrowChilds => (0.0, 0.0, 0.0, delta / child_count.max(1.0))
+            FlexLayout::GrowChilds => (0.0, 0.0, 0.0, delta / child_count.max(1.0)),
         };
         pad_mid += self.padding;
         let mut offset = pad_front;
@@ -113,7 +113,7 @@ impl<'a, const ROW: bool, T, E> Flex<'a, ROW, T, E>
             padding: 0.0,
             layout: FlexLayout::Front,
             child_size_or_offset: Vec::new(),
-            total_primary_size: 0.0
+            total_primary_size: 0.0,
         }
     }
 

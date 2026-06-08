@@ -7,7 +7,6 @@ pub mod data;
 pub mod layout;
 pub mod interact;
 pub mod compose;
-pub mod watch;
 
 pub trait WidgetExt<T, E>: Widget<T, E> + Sized
 {
@@ -19,6 +18,7 @@ pub trait WidgetExt<T, E>: Widget<T, E> + Sized
     fn lens<U, L: Lens<U, T>>(self, lens: L) -> data::Lensing<U, T, E, Self, L> { data::Lensing::new(self, lens) }
     fn own<U>(self, data: T) -> data::Owning<U, T, E, Self> { data::Owning::new(self, data) }
     fn map<'a, U, F: FnMut(&U) -> T + 'a>(self, f: F) -> data::Map<'a, U, T, E, Self, F> { data::Map::new(self, f) }
+    fn cache(self) -> data::Cache<T, E, Self> where T: Clone + PartialEq { data::Cache::new(self) }
     //layout
     fn fix(self) -> layout::Fix<T, E, Self> { layout::Fix::new(self) }
     fn align(self) -> layout::Align<T, E, Self> { layout::Align::new(self) }
@@ -30,6 +30,14 @@ pub trait WidgetExt<T, E>: Widget<T, E> + Sized
 }
 
 impl<T, E, W: Widget<T, E>> WidgetExt<T, E> for W {}
+
+impl<'a, E: Clone, W: Widget<bool, E>> interact::Response<'a, bool, E, W>
+{
+    pub fn toggle(self) -> interact::Response<'a, bool, E, primitive::Toggle<E, W>>
+    {
+        self.map_child(primitive::Toggle::new)
+    }
+}
 
 impl<'a, T, E> Widget<T, E> for Box<dyn Widget<T, E> + 'a>
 {
