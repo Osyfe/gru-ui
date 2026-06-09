@@ -174,12 +174,6 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         &mut self.style
     }
 
-    fn get_root(&mut self, ctx: Option<&mut WidgetComputeCtx>, data: &mut T) -> &mut dyn Widget<T, E>
-    {
-        if let Some(ctx) = ctx { self.root = Some((self.constructor)(ctx, data)); }
-        self.root.as_mut().unwrap()
-    }
-
     pub fn frame<'b>(&mut self, config: UiConfig, data: &mut T, events: impl Iterator<Item = &'b event::HardwareEvent>) -> Frame<'_, E>
     {
         //config
