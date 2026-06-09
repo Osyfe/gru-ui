@@ -1,5 +1,56 @@
 use super::*;
 
+pub struct Maybe<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a>
+{
+    child: W,
+    f: F,
+    active: bool,
+    _phantom: PhantomData<&'a (T, E)>,
+}
+
+impl<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a> Widget<T, E> for Maybe<'a, T, E, W, F>
+{
+    #[inline]
+    fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
+    {
+        if let WidgetEvent::NewData = ctx.event
+        {
+            let current = (self.f)(data);
+            if current != self.active { ctx.request.widget(); }
+            self.active = current;
+        }
+        if self.active { self.child.event(ctx, data); }
+    }
+
+    #[inline]
+    fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
+    {
+        if self.active { self.child.layout_inquire(ctx, data) }
+        else { Vec2::zero() }
+    }
+
+    #[inline]
+    fn layout_compute(&mut self, ctx: &mut LayoutComputeCtx, data: &T, size: Vec2) -> Vec2
+    {
+        if self.active { self.child.layout_compute(ctx, data, size) }
+        else { Vec2::zero() }
+    }
+
+    #[inline]
+    fn paint(&mut self, ctx: &mut PaintCtx, data: &T)
+    {
+        if self.active { self.child.paint(ctx, data); }
+    }
+}
+
+impl<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a> Maybe<'a, T, E, W, F>
+{
+    pub fn new(widget: W, f: F) -> Self
+    {
+        Self { child: widget, f, active: false, _phantom: PhantomData }
+    }
+}
+
 pub struct And<T, E, W1: Widget<T, E>, W2: Widget<T, E>>
 {
     child1: W1,

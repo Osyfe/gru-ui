@@ -38,6 +38,7 @@ fix/add/ideas:
      - textures
      - style options
      - widgets: split, folder
+     - replace Maybe widget with something better?
 
      - 1 input & 1 output generic type + lenses/pipes with zip etc.
      - enhance lenses from lensing to general data transformers + flexible lifetimes (-> pipes?)

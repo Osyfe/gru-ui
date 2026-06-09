@@ -26,6 +26,7 @@ pub trait WidgetExt<T, E>: Widget<T, E> + Sized
     //interact
     fn response<'a>(self) -> interact::Response<'a, T, E, Self> where E: Clone { interact::Response::new(self) }
     //composition
+    fn maybe<'a, F: FnMut(&mut T) -> bool + 'a>(self, f: F) -> compose::Maybe<'a, T, E, Self, F> { compose::Maybe::new(self, f) }
     fn and<W2: Widget<T, E>>(self, other: W2) -> compose::And<T, E, Self, W2> { compose::And::new(self, other) }
 }
 
