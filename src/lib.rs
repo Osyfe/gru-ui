@@ -174,6 +174,12 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         &mut self.style
     }
 
+    fn get_root(&mut self, ctx: Option<&mut WidgetComputeCtx>, data: &mut T) -> &mut dyn Widget<T, E>
+    {
+        if let Some(ctx) = ctx { self.root = Some((self.constructor)(ctx, data)); }
+        self.root.as_mut().unwrap()
+    }
+
     pub fn frame<'b>(&mut self, config: UiConfig, data: &mut T, events: impl Iterator<Item = &'b event::HardwareEvent>) -> Frame<'_, E>
     {
         //config
@@ -184,36 +190,49 @@ impl<'a, T: 'a, E> Ui<'a, T, E>
         let scale = config.scale * config.display_scale_factor * DEFAULT_SCALE;
         let size = config.size / scale;
 
-        //compute widgets
-        if self.request.widget
+        //widget computer
+        let root_compute = |ui: &mut Self, data: &mut T|
         {
             let mut ctx = WidgetComputeCtx;
-            self.root = Some((self.constructor)(&mut ctx, data));
-        }
+            ui.root = Some((ui.constructor)(&mut ctx, data));
+        };
+
+        //"new data" event sender
+        let new_data_send = |request: &mut Request, events: &mut Vec<event::Event<E>>, widget: &mut dyn Widget<T, E>, data: &mut T|
+        {
+            let mut ctx = EventCtx { request, event: event::WidgetEvent::NewData, events };
+            widget.event(&mut ctx, data);
+        };
+
+        //init root on first frame
+        if self.root.is_none() { root_compute(self, data); }
         let root = self.root.as_mut().unwrap();
 
         self.events.clear();
-
-        //"new data" event
+        //"new data" each frame
+        new_data_send(&mut self.request, &mut self.events, root, data);
+        //external events
+        for event in events
         {
-            let mut ctx = EventCtx { request: &mut self.request, event: event::WidgetEvent::NewData, events: &mut self.events };
+            let mut hardware_event = event::HardwareEventPod::new(event.clone());
+            let mut ctx = EventCtx { request: &mut self.request, event: event::WidgetEvent::Hardware(&mut hardware_event), events: &mut self.events };
+            
+            ctx.event.scale(1.0 / scale);
             root.event(&mut ctx, data);
+            ctx.event.scale(scale);
+            
+            self.events.push(event::Event::Hardware(hardware_event));
         }
 
-        //events
+        //compute widgets
+        let root = if self.request.widget
         {
-            for event in events
-            {
-                let mut hardware_event = event::HardwareEventPod::new(event.clone());
-                let mut ctx = EventCtx { request: &mut self.request, event: event::WidgetEvent::Hardware(&mut hardware_event), events: &mut self.events };
-
-                ctx.event.scale(1.0 / scale);
-                root.event(&mut ctx, data);
-                ctx.event.scale(scale);
-
-                self.events.push(event::Event::Hardware(hardware_event));
-            }
-        }
+            root_compute(self, data);
+            let root = self.root.as_mut().unwrap();
+            //"new data" after root rebuild because widgets rely on it being called before layout & paint
+            new_data_send(&mut self.request, &mut self.events, root, data);
+            root
+        } else { root };
 
         //compute layout
         let mut fits = true;
