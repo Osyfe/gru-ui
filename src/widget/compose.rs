@@ -5,7 +5,7 @@ pub struct Maybe<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a>
     child: W,
     f: F,
     active: bool,
-    _phantom: PhantomData<&'a (T, E)>
+    _phantom: PhantomData<&'a (T, E)>,
 }
 
 impl<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a> Widget<T, E> for Maybe<'a, T, E, W, F>
@@ -13,22 +13,13 @@ impl<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a> Widget<T, E> for 
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
     {
+        if let WidgetEvent::NewData = ctx.event
+        {
+            let current = (self.f)(data);
+            if current != self.active { ctx.request.widget(); }
+            self.active = current;
+        }
         if self.active { self.child.event(ctx, data); }
-    }
-
-    #[inline]
-    fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T)
-    {
-        let current = (self.f)(data);
-        if current != self.active { ctx.request.widget(); }
-        self.active = current;
-        if self.active { self.child.update(ctx, data); }
-    }
-
-    #[inline]
-    fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T)
-    {
-        if self.active { self.child.widget_compute(ctx, data); }
     }
 
     #[inline]
@@ -49,13 +40,6 @@ impl<'a, T, E, W: Widget<T, E>, F: FnMut(&mut T) -> bool + 'a> Widget<T, E> for 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &T)
     {
         if self.active { self.child.paint(ctx, data); }
-    }
-
-    #[inline]
-    fn respond(&mut self, data: &mut T, button: Option<MouseButton>) -> bool
-    {
-        if self.active { self.child.respond(data, button) }
-        else { false }
     }
 }
 
@@ -84,20 +68,6 @@ impl<T, E, W1: Widget<T, E>, W2: Widget<T, E>> Widget<T, E> for And<T, E, W1, W2
     }
 
     #[inline]
-    fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T)
-    {
-        self.child1.update(ctx, data);
-        self.child2.update(ctx, data);
-    }
-
-    #[inline]
-    fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T)
-    {
-        self.child1.widget_compute(ctx, data);
-        self.child2.widget_compute(ctx, data);
-    }
-
-    #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
     {
         let size1 = self.child1.layout_inquire(ctx, data);
@@ -118,14 +88,6 @@ impl<T, E, W1: Widget<T, E>, W2: Widget<T, E>> Widget<T, E> for And<T, E, W1, W2
     {
         self.child1.paint(ctx, data);
         self.child2.paint(ctx, data);
-    }
-
-    #[inline]
-    fn respond(&mut self, data: &mut T, button: Option<MouseButton>) -> bool
-    {
-        let update2 = self.child1.respond(data, button);
-        let update1 = self.child2.respond(data, button);
-        update1 || update2
     }
 }
 
@@ -149,16 +111,6 @@ impl<'a, T, E> Widget<T, E> for Set<'a, T, E>
         for child in self.childs.iter_mut().rev() { child.event(ctx, data); }
     }
 
-    fn update(&mut self, ctx: &mut UpdateCtx, data: &mut T)
-    {
-        for child in &mut self.childs { child.update(ctx, data); }
-    }
-
-    fn widget_compute(&mut self, ctx: &mut WidgetComputeCtx, data: &mut T)
-    {
-        for child in &mut self.childs { child.widget_compute(ctx, data); }
-    }
-
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
     {
         let mut max_size = Vec2::zero();
@@ -176,13 +128,6 @@ impl<'a, T, E> Widget<T, E> for Set<'a, T, E>
     fn paint(&mut self, ctx: &mut PaintCtx, data: &T)
     {
         for child in &mut self.childs { child.paint(ctx, data); }
-    }
-
-    fn respond(&mut self, data: &mut T, button: Option<MouseButton>) -> bool
-    {
-        let mut update = false;
-        for child in self.childs.iter_mut().rev() { update |= child.respond(data, button); }
-        update
     }
 }
 

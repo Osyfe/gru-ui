@@ -7,7 +7,7 @@ pub enum MouseButton
 {
     Primary,
     Secondary,
-    Terciary
+    Terciary,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -246,12 +246,12 @@ pub enum HardwareEvent
     CloseWindow,
     Scroll { pos: Vec2, delta: Vec2 },
     Key { key: Key, pressed: bool },
-    Char(char)
+    Char(char),
 }
 
 impl HardwareEvent
 {
-    pub(crate) fn scale(&mut self, scale: f32) -> &mut Self
+    fn scale(&mut self, scale: f32) -> &mut Self
     {
         match self
         {
@@ -261,37 +261,37 @@ impl HardwareEvent
                 *delta *= scale;
             },
             Self::PointerClicked { pos, .. } => *pos *= scale,
-            _ => {}
+            _ => {},
         }
         self
     }
 
-    pub(crate) fn offset(&mut self, offset: Vec2) -> &mut Self
+    fn offset(&mut self, offset: Vec2) -> &mut Self
     {
         match self
         {
             Self::PointerMoved { pos, .. } => *pos += offset,
             Self::PointerClicked { pos, .. } => *pos += offset,
-            _ => {}
+            _ => {},
         }
         self
     }
 }
 
-pub struct EventPod
+pub struct HardwareEventPod
 {
     pub event: HardwareEvent,
-    pub used: bool
+    pub used: bool,
 }
 
-impl EventPod
+impl HardwareEventPod
 {
     pub(crate) fn new(event: HardwareEvent) -> Self
     {
         Self
         {
             event,
-            used: false
+            used: false,
         }
     }
 }
@@ -299,11 +299,42 @@ impl EventPod
 pub enum LogicEvent<T>
 {
     Clicked(T, MouseButton),
-    Pressed(T, Key, bool)
+    Pressed(T, Key, bool),
 }
 
 pub enum Event<T>
 {
-    Hardware(EventPod),
-    Logic(LogicEvent<T>)
+    Hardware(HardwareEventPod),
+    Logic(LogicEvent<T>),
+}
+
+pub enum SyntheticEvent
+{
+    HoverEnter,
+    HoverLeave,
+    HotEnter,
+    HotLeave,
+    Clicked(Option<MouseButton>),
+}
+
+pub enum WidgetEvent<'a>
+{
+    NewData,
+    Hardware(&'a mut HardwareEventPod),
+    Synthetic(SyntheticEvent),
+}
+
+impl<'a> WidgetEvent<'a>
+{
+    pub(crate) fn scale(&mut self, scale: f32) -> &mut Self
+    {
+        if let Self::Hardware(event) = self { event.event.scale(scale); }
+        self
+    }
+
+    pub(crate) fn offset(&mut self, offset: Vec2) -> &mut Self
+    {
+        if let Self::Hardware(event) = self { event.event.offset(offset); }
+        self
+    }
 }

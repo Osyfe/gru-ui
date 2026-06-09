@@ -1,40 +1,46 @@
-layout:
+after v1:
+     improve:
+          x too verbose -> good defaults + builder pattern
+          x layout weird -> two layout passes with clearly defined behaviour
+          x response impl suboptimal -> find better solution, maybe ui events?
+          x dynamic ui slapped ontop -> bake dynamic ui building into the system
+          x multiple root widgets awkward -> one master widget and combination widgets
 
-1. child -> parent: min size
-2. parent -> child: allocated size
-3. child -> parent: render size
+     keep:
+          modularity
+          general borrowing + lensing mechanics
+     new layout:
+          1. child -> parent: min size
+          2. parent -> child: allocated size
+          3. child -> parent: render size
 
-improve:
+after v2:
+     improve:
+          D lensing/mapping/caching/watcher interwoven with general widgets has too complex interactions -> separate "data" structure where caches live and the widgets lens/pipe into?
+          x response via new event type -> no response in Widget trait
+          x global "dynamic" widget update -> no compute in Widget
+          x update via new event type -> no update in Widget trait
+     keep:
+          layout seems to work well enough so far
 
-too verbose -> good defaults + builder pattern
-layout weird -> two layout passes with clearly defined behaviour
-response impl suboptimal -> find better solution, maybe ui events?
-dynamic ui slapped ontop -> bake dynamic ui building into the system
-multiple root widgets awkward -> one master widget and combination widgets
+fix/add/ideas:
+     x udpate derive to 2024 edition
+     ? systematic "does not fit" checking
+     - response/event/inter widget communication overhaul
+          x respond method replacement
+          - reponse in response -> ?
+     - layout & styling from data without dynamic update
+     x toggle widget in widgetext -> function on Response
+     - widget state optionally externally provided? -> persistent across ui tree recomputation
+     - enum solution => LensSlice auf Option<T> statt backup dummy data
+     - scissoring + scroll widget (counterpart to align)
+     - popups/-outs (general layers?)
+     - textures
+     - style options
+     - widgets: split, folder
+     - replace Maybe widget with something better?
 
-keep:
-
-modularity
-general borrowing + lensing mechanics
-
-     #####
-
-fix/add:
-
-x udpate derive to 2021 edition
-? systematic "does not fit" checking
-- response/event/inter widget communication overhaul
-     - respond method replacement
-     - reponse in response -> ?
-- general bool toggle wrapper widget
-- enhance lenses from lensing to general data transformers + flexible lifetimes
-- bifurcation transform -> multiple children widgets attached
-- enum solution
-- maybe -> all features deactivatable individually
-- widget method blocker wrapper (no update etc.)
-- scissoring + scroll widget (counterpart to align)
-- popups/-outs (general layers?)
-- layout reactions (e.g. longer label popup on hover / shorter label when not enough space)
-- textures
-- style options
-- widgets: split, folder
+     - 1 input & 1 output generic type + lenses/pipes with zip etc.
+     - enhance lenses from lensing to general data transformers + flexible lifetimes (-> pipes?)
+     - widget method blocker wrapper (outdated since leaner Widget trait?)
+     - layout reactions (e.g. longer label popup on hover / shorter label when not enough space)

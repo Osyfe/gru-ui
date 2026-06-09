@@ -10,12 +10,9 @@ pub struct Empty;
 impl<T, E> Widget<T, E> for Empty
 {
     impl_event_empty!(T);
-    impl_update_empty!(T);
-    impl_widget_compute_empty!(T);
     impl_layout_inquire_empty!(T);
     impl_layout_compute_empty!(T);
     impl_paint_empty!(T);
-    impl_respond_empty!(T);
 }
 
 pub struct Fix<T, E, W: Widget<T, E>>
@@ -29,8 +26,6 @@ pub struct Fix<T, E, W: Widget<T, E>>
 impl<T, E, W: Widget<T, E>> Widget<T, E> for Fix<T, E, W>
 {
     impl_event_child!(T);
-    impl_update_child!(T);
-    impl_widget_compute_child!(T);
 
     #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
@@ -53,7 +48,6 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Fix<T, E, W>
     }
 
     impl_paint_child!(T);
-    impl_respond_child!(T);
 }
 
 impl<T, E, W: Widget<T, E>> Fix<T, E, W>
@@ -98,13 +92,10 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Align<T, E, W>
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
     {
-        ctx.event.event.offset(-self.size_or_offset);
+        ctx.event.offset(-self.size_or_offset);
         self.child.event(ctx, data);
-        ctx.event.event.offset(self.size_or_offset);
+        ctx.event.offset(self.size_or_offset);
     }
-
-    impl_update_child!(T);
-    impl_widget_compute_child!(T);
 
     #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
@@ -141,8 +132,6 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Align<T, E, W>
         self.child.paint(ctx, data);
         ctx.add_offset(-self.size_or_offset);
     }
-
-    impl_respond_child!(T);
 }
 
 impl<T, E, W: Widget<T, E>> Align<T, E, W>
@@ -192,13 +181,10 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Padding<T, E, W>
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
     {
-        ctx.event.event.offset(-self.padding.min);
+        ctx.event.offset(-self.padding.min);
         self.child.event(ctx, data);
-        ctx.event.event.offset(self.padding.min);
+        ctx.event.offset(self.padding.min);
     }
-
-    impl_update_child!(T);
-    impl_widget_compute_child!(T);
 
     #[inline]
     fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &T) -> Vec2
@@ -222,8 +208,6 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Padding<T, E, W>
         self.child.paint(ctx, data);
         ctx.add_offset(-self.padding.min);
     }
-
-    impl_respond_child!(T);
 }
 
 impl<T, E, W: Widget<T, E>> Padding<T, E, W>
