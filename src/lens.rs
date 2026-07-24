@@ -92,7 +92,52 @@ impl<'a, U, T, F: FnMut(&U) -> T + 'a, G: FnMut(&mut U, &T) + 'a> Transform<'a, 
     }
 }
 
-#[derive(Clone, Copy)]
+pub struct Fallback<U, T, F: FnMut(&U) -> Option<&T>, FM: FnMut(&mut U) -> Option<&mut T>>
+{
+    f: F,
+    f_mut: FM,
+    fallback: T,
+    _phantom: PhantomData<U>,
+}
+
+impl<U, T, F: FnMut(&U) -> Option<&T>, FM: FnMut(&mut U) -> Option<&mut T>> Lens<U, T> for Fallback<U, T, F, FM>
+{
+    #[inline]
+    fn with<A, H: FnOnce(&T) -> A>(&mut self, data: &U, h: H) -> A
+    {
+        let data = match (self.f)(data)
+        {
+            Some(data) => data,
+            None => &self.fallback,
+        };
+        h(data)
+    }
+
+    #[inline]
+    fn with_mut<A, H: FnOnce(&mut T) -> A>(&mut self, data: &mut U, h: H) -> A
+    {
+        let data = match (self.f_mut)(data)
+        {
+            Some(data) => data,
+            None => &mut self.fallback,
+        };
+        h(data)
+    }
+}
+
+impl<U, T, F: FnMut(&U) -> Option<&T>, FM: FnMut(&mut U) -> Option<&mut T>> Fallback<U, T, F, FM>
+{
+    pub fn new(f: F, f_mut: FM, fallback: T) -> Self
+    {
+        Self { f, f_mut, fallback, _phantom: PhantomData }
+    }
+}
+
+pub fn fallback_option<T>(fallback: T) -> impl Lens<Option<T>, T>
+{
+    Fallback::new(Option::as_ref, Option::as_mut, fallback)
+}
+
 pub struct LensSlice<T>(pub usize, pub T);
 
 impl<U: AsRef<[T]> + AsMut<[T]>, T> Lens<U, T> for LensSlice<T>

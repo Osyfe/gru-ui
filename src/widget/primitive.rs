@@ -7,7 +7,7 @@ pub struct Bg<T, E, W: Widget<T, E>>
 {
     child: W,
     size: Vec2,
-    _phantom: PhantomData<(T, E)>
+    _phantom: PhantomData<(T, E)>,
 }
 
 impl<T, E, W: Widget<T, E>> Widget<T, E> for Bg<T, E, W>
@@ -42,7 +42,7 @@ pub struct Label<T: Borrow<str>>
 {
     text_size: f32,
     size: Vec2,
-    _phantom: PhantomData<T>
+    _phantom: PhantomData<T>,
 }
 
 impl<T: Borrow<str>, E> Widget<T, E> for Label<T>
@@ -86,7 +86,7 @@ pub struct Text<T: Borrow<str>>
     align: text::Align,
     wish_width: f32,
     actual_size: Vec2,
-    _phantom: PhantomData<T>
+    _phantom: PhantomData<T>,
 }
 
 impl<T: Borrow<str>, E> Widget<T, E> for Text<T>
@@ -145,7 +145,7 @@ impl<T: Borrow<str>> Text<T>
 
 pub struct Check
 {
-    size: f32
+    size: f32,
 }
 
 impl<E> Widget<bool, E> for Check
