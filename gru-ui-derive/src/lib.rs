@@ -5,6 +5,11 @@ use crate::proc_macro::TokenStream;
 #[proc_macro_derive(Lens)]
 pub fn lens_derive(input: TokenStream) -> TokenStream
 {
+    let proc_macro_crate::FoundCrate::Name(grui) = proc_macro_crate::crate_name("gru-ui")
+        .expect("gru-ui is present in `Cargo.toml`")
+    else { panic!("package schenanigans") };
+    let grui = quote::format_ident!("{grui}");
+
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
     let name = &input.ident;
     let generics = &input.generics;
@@ -25,7 +30,7 @@ pub fn lens_derive(input: TokenStream) -> TokenStream
                         #[derive(Clone, Copy)]
                         pub struct #lens;
 
-                        impl #generics ::gru_ui::lens::Projector<#name #generics, #ty> for #lens
+                        impl #generics #grui::lens::Projector<#name #generics, #ty> for #lens
                         {
                             #[inline]
                             fn project(self, data: &#name #generics) -> &#ty
@@ -40,7 +45,7 @@ pub fn lens_derive(input: TokenStream) -> TokenStream
                             }
                         }
 
-                        impl #generics Lens<#name #generics, #ty> for #lens
+                        impl #generics #grui::lens::Lens<#name #generics, #ty> for #lens
                         {
                             #[inline]
                             fn with<A, F: FnOnce(&#ty) -> A>(&mut self, data: &#name #generics, f: F) -> A
