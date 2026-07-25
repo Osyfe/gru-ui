@@ -25,6 +25,21 @@ pub fn lens_derive(input: TokenStream) -> TokenStream
                         #[derive(Clone, Copy)]
                         pub struct #lens;
 
+                        impl #generics ::gru_ui::lens::Projector<#name #generics, #ty> for #lens
+                        {
+                            #[inline]
+                            fn project(self, data: &#name #generics) -> &#ty
+                            {
+                                &data.#attribute
+                            }
+
+                            #[inline]
+                            fn project_mut(self, data: &mut #name #generics) -> &mut #ty
+                            {
+                                &mut data.#attribute
+                            }
+                        }
+
                         impl #generics Lens<#name #generics, #ty> for #lens
                         {
                             #[inline]

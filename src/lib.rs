@@ -1,3 +1,6 @@
+#![feature(unboxed_closures)]
+#![feature(fn_traits)]
+
 pub mod math { pub use gru_misc::math::{Vec2, Rect}; }
 pub mod text { pub use gru_misc::text_sdf::{Font, Align, Layout}; }
 pub mod event;

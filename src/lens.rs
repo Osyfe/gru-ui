@@ -3,6 +3,52 @@ use std::marker::PhantomData;
 pub use gru_ui_derive::Lens;
 pub use tuples::*;
 
+pub trait Projector<U, T>: Copy
+{
+    fn project(self, data: &U) -> &T;
+    fn project_mut(self, data: &mut U) -> &mut T;
+}
+
+pub trait ProjectorExt<U, T>: Projector<U, T> + Sized
+{
+    fn to_lens(self) -> ProjectionLens<U, T, Self> { ProjectionLens::new(self) }
+    fn fallback(self, fallback: T) -> impl Lens<Option<U>, T> where Self: Clone + 'static
+    {
+        Fallback::new
+        (
+            move |opt_u: &Option<U>| opt_u.as_ref().map(|u| self.project(u)),
+            move |opt_u| opt_u.as_mut().map(|u| self.project_mut(u)),
+            fallback
+        )
+    }
+}
+
+impl<U, T, P: Projector<U, T>> ProjectorExt<U, T> for P {}
+
+pub struct ProjectionLens<U, T, P: Projector<U, T>>
+{
+    p: P,
+    _phantom: PhantomData<(U, T)>,
+}
+
+impl<U, T, P: Projector<U, T>> Lens<U, T> for ProjectionLens<U, T, P>
+{
+    fn with<A, F: FnOnce(&T) -> A>(&mut self, data: &U, f: F) -> A
+    {
+        f(self.p.project(data))
+    }
+
+    fn with_mut<A, F: FnOnce(&mut T) -> A>(&mut self, data: &mut U, f: F) -> A
+    {
+        f(self.p.project_mut(data))
+    }
+}
+
+impl<U, T, P: Projector<U, T>> ProjectionLens<U, T, P>
+{
+    pub fn new(projector: P) -> Self { Self { p: projector, _phantom: PhantomData }}
+}
+
 pub trait Lens<U, T>
 {
     fn with<A, F: FnOnce(&T) -> A>(&mut self, data: &U, f: F) -> A;
@@ -133,11 +179,40 @@ impl<U, T, F: FnMut(&U) -> Option<&T>, FM: FnMut(&mut U) -> Option<&mut T>> Fall
     }
 }
 
-pub fn fallback_option<T>(fallback: T) -> impl Lens<Option<T>, T>
+pub struct OptionRef;
+pub struct OptionMut;
+
+impl<'a, T> FnOnce<(&'a Option<T>,)> for OptionRef
 {
-    Fallback::new(Option::as_ref, Option::as_mut, fallback)
+    type Output = Option<&'a T>;
+    extern "rust-call" fn call_once(self, (opt,): (&'a Option<T>,)) -> Self::Output { opt.as_ref() }
 }
 
+impl<'a, T> FnMut<(&'a Option<T>,)> for OptionRef
+{
+    extern "rust-call" fn call_mut(&mut self, (opt,): (&'a Option<T>,)) -> Self::Output { opt.as_ref() }
+}
+
+impl<'a, T> FnOnce<(&'a mut Option<T>,)> for OptionMut
+{
+    type Output = Option<&'a mut T>;
+    extern "rust-call" fn call_once(self, (opt,): (&'a mut Option<T>,)) -> Self::Output { opt.as_mut() }
+}
+
+impl<'a, T> FnMut<(&'a mut Option<T>,)> for OptionMut
+{
+    extern "rust-call" fn call_mut(&mut self, (opt,): (&'a mut Option<T>,)) -> Self::Output { opt.as_mut() }
+}
+
+impl<T> Fallback<Option<T>, T, OptionRef, OptionMut>
+{
+    pub fn new_option(fallback: T) -> Self
+    {
+        Self { f: OptionRef, f_mut: OptionMut, fallback, _phantom: PhantomData }
+    }
+}
+
+#[derive(Clone)]
 pub struct LensSlice<T>(pub usize, pub T);
 
 impl<U: AsRef<[T]> + AsMut<[T]>, T> Lens<U, T> for LensSlice<T>
