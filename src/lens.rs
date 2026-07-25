@@ -7,10 +7,7 @@ pub trait Projector<U, T>: Copy
 {
     fn project(self, data: &U) -> &T;
     fn project_mut(self, data: &mut U) -> &mut T;
-}
 
-pub trait ProjectorExt<U, T>: Projector<U, T> + Sized
-{
     fn to_lens(self) -> ProjectionLens<U, T, Self> { ProjectionLens::new(self) }
     fn fallback(self, fallback: T) -> impl Lens<Option<U>, T> where Self: Clone + 'static
     {
@@ -22,8 +19,6 @@ pub trait ProjectorExt<U, T>: Projector<U, T> + Sized
         )
     }
 }
-
-impl<U, T, P: Projector<U, T>> ProjectorExt<U, T> for P {}
 
 pub struct ProjectionLens<U, T, P: Projector<U, T>>
 {
