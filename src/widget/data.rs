@@ -182,3 +182,63 @@ impl<T: Clone + PartialEq, E, W: Widget<T, E>> Cache<T, E, W>
         self
     }
 }
+
+#[macro_export]
+macro_rules! widget_match
+{
+    ($u: ty | $($name: tt; $case: pat => $(@ $var: ident :)? $t: ty => $child: block),+) =>
+    {
+        {
+            use $crate::{Widget, EventCtx, LayoutInquireCtx, LayoutComputeCtx, PaintCtx, math};
+
+            #[allow(non_snake_case)]
+            struct Anon<$($name),+>
+            {
+                $($name: $name),+
+            }
+
+            #[allow(unused)]
+            impl<E, $($name: Widget<$t, E>),+> Widget<$u, E> for Anon<$($name),+>
+            {
+                fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut $u)
+                {
+                    let mut void = ();
+                    match data
+                    {
+                        $($case => self.$name.event(ctx, { &mut void $(; $var)? })),+
+                    }
+                }
+
+                fn layout_inquire(&mut self, ctx: &mut LayoutInquireCtx, data: &$u) -> math::Vec2
+                {
+                    let void = ();
+                    match data
+                    {
+                        $($case => self.$name.layout_inquire(ctx, { &void $(; $var)? })),+
+                    }
+                }
+
+                fn layout_compute(&mut self, ctx: &mut LayoutComputeCtx, data: &$u, size: math::Vec2) -> math::Vec2
+                {
+                    let void = ();
+                    match data
+                    {
+                        $($case => self.$name.layout_compute(ctx, { &void $(; $var)? }, size)),+
+                    }
+                }
+
+                fn paint(&mut self, ctx: &mut PaintCtx, data: &$u)
+                {
+                    let void = ();
+                    match data
+                    {
+                        $($case => self.$name.paint(ctx, { &void $(; $var)? })),+
+                    }
+                }
+            }
+
+            Anon { $($name: $child),+ }
+        }
+    };
+}
+pub use widget_match;
