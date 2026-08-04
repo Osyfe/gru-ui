@@ -186,7 +186,7 @@ impl<T: Clone + PartialEq, E, W: Widget<T, E>> Cache<T, E, W>
 #[macro_export]
 macro_rules! widget_match
 {
-    ($u: ty | $($name: tt; $case: pat => $(@ $var: ident :)? $t: ty => $child: block),+) =>
+    (match $u: ty { $($name: tt; $case: pat => $(@ $var: ident :)? $t: ty => $child: block),+ }) =>
     {
         {
             use $crate::{Widget, EventCtx, LayoutInquireCtx, LayoutComputeCtx, PaintCtx, math};
