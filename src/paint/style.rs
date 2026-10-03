@@ -25,10 +25,10 @@ impl ColorSet
 #[derive(Clone)]
 pub struct StyleSet
 {
-    pub bg: ColorSet,
-    pub top: Color,
-    pub text: Color,
-    pub data: ColorSet,
+    pub bg: ColorSet, // Only Bg
+    pub top: Color, // Checkbox border and check, Slider bar
+    pub text: Color, // Label and Text text color
+    pub data: ColorSet, // Slider Rhombus, Checkbox inside, Edit inside
 }
 
 impl Default for StyleSet
