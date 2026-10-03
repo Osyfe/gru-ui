@@ -102,6 +102,37 @@ impl Painter
         for i in [0, 1, 2, 2, 3, 0] { self.indices.push(i0 + i); }
     }
 
+    pub fn draw_frame(&mut self, outside: Rect, inside: Rect, color: Color)
+    {
+        let outside = (outside + self.origin) * self.scale;
+        let inside = (inside + self.origin) * self.scale;
+        // Trapezoidal pattern
+        // Vertex order (outside-inside back-and-forth) counterclockwise
+        use Corner::*;
+        let all_corners = [
+            TopLeft.of(inside),      //0
+            TopLeft.of(outside),     //1
+            BottomLeft.of(outside),  //2
+            BottomLeft.of(inside),   //3
+            BottomRight.of(inside),  //4
+            BottomRight.of(outside), //5
+            TopRight.of(outside),    //6
+            TopRight.of(inside),     //7
+        ];
+
+        let i0 = self.vertices.len() as u16;
+        for position in all_corners { self.vertices.push(Vertex { position, color, tex_coords: None }); }
+        
+        let left_side = [0, 1, 2, 2, 3, 0];   // 0 1 2 3 -> 0 1 2 3
+        let bottom_side = [3, 2, 5, 5, 4, 3]; // 0 1 2 3 -> 3 2 5 4
+        let right_side = [4, 5, 6, 6, 7, 4];  // 0 1 2 3 -> 4 5 6 7
+        let top_side = [7, 6, 1, 1, 0, 7];    // 0 1 2 3 -> 7 6 1 0
+        for side in [left_side, bottom_side, right_side, top_side]
+        {
+            for i in side { self.indices.push(i0 + i); }
+        }
+    }
+
     pub fn draw_rhombus(&mut self, rect: Rect, color: Color)
     {
         let rect = (rect + self.origin) * self.scale;
