@@ -33,13 +33,13 @@ pub fn lens_derive(input: TokenStream) -> TokenStream
                         impl #generics #grui::lens::Projector<#name #generics, #ty> for #lens
                         {
                             #[inline]
-                            fn project(self, data: &#name #generics) -> &#ty
+                            fn project<'unique_ident>(self, data: &'unique_ident #name #generics) -> &'unique_ident #ty
                             {
                                 &data.#attribute
                             }
 
                             #[inline]
-                            fn project_mut(self, data: &mut #name #generics) -> &mut #ty
+                            fn project_mut<'unique_ident>(self, data: &'unique_ident mut #name #generics) -> &'unique_ident mut #ty
                             {
                                 &mut data.#attribute
                             }
