@@ -34,6 +34,37 @@ pub(crate) struct Painter
     new: bool
 }
 
+enum Corner
+{
+    TopLeft,
+    BottomLeft,
+    BottomRight,
+    TopRight,
+}
+
+impl Corner
+{
+    fn of(self, rect: Rect) -> Vec2 {
+        match self
+        {
+            Corner::TopLeft => rect.min,
+            Corner::BottomLeft => Vec2(rect.min.0, rect.max.1),
+            Corner::BottomRight => rect.max,
+            Corner::TopRight => Vec2(rect.max.0, rect.min.1),
+        }
+    }
+
+    fn all_of(rect: Rect) -> [Vec2; 4]
+    {
+        [
+            Corner::TopLeft,
+            Corner::BottomLeft,
+            Corner::BottomRight,
+            Corner::TopRight,
+        ].map(|corner| corner.of(rect))   
+    }
+}
+
 impl Painter
 {
     fn atlas_builder(font: Font, scale: f32) -> AtlasBuilder
@@ -65,26 +96,26 @@ impl Painter
 
     pub fn draw_rect(&mut self, rect: Rect, color: Color)
     {
-        let min = self.origin + rect.min;
-        let max = self.origin + rect.max;
+        let rect = (rect + self.origin) * self.scale;
         let i0 = self.vertices.len() as u16;
-        for pos in [min, Vec2(min.0, max.1), max, Vec2(max.0, min.1)] { self.vertices.push(Vertex { position: pos * self.scale, color, tex_coords: None }); }
+        for position in Corner::all_of(rect) { self.vertices.push(Vertex { position, color, tex_coords: None }); }
         for i in [0, 1, 2, 2, 3, 0] { self.indices.push(i0 + i); }
     }
 
     pub fn draw_rhombus(&mut self, rect: Rect, color: Color)
     {
-        let min = self.origin + rect.min;
-        let max = self.origin + rect.max;
-        let size = rect.size();
+        let rect = (rect + self.origin) * self.scale;
+        let radius = rect.size() / 2.0;
+        let min = rect.min;
+        let max = rect.max;
         let i0 = self.vertices.len() as u16;
-        for pos in
+        for position in
         [
-            Vec2(min.0, min.1 + size.1 / 2.0), //left
-            Vec2(min.0 + size.0 / 2.0, max.1), //bottom
-            Vec2(max.0, min.1 + size.1 / 2.0), //right
-            Vec2(min.0 + size.0 / 2.0, min.1) //top
-        ] { self.vertices.push(Vertex { position: pos * self.scale, color, tex_coords: None }); }
+            Vec2(min.0, min.1 + radius.1), //left
+            Vec2(min.0 + radius.0, max.1), //bottom
+            Vec2(max.0, min.1 + radius.1), //right
+            Vec2(min.0 + radius.0, min.1) //top
+        ] { self.vertices.push(Vertex { position, color, tex_coords: None }); }
         for i in [0, 1, 2, 2, 3, 0] { self.indices.push(i0 + i); }
     }
 
