@@ -23,7 +23,8 @@ pub trait WidgetExt<T, E>: Widget<T, E> + Sized
     //layout
     fn fix(self) -> layout::Fix<T, E, Self> { layout::Fix::new(self) }
     fn align(self) -> layout::Align<T, E, Self> { layout::Align::new(self) }
-    fn pad(self) -> layout::Padding<T, E, Self> { layout::Padding::new(self) }
+    fn pad(self) -> layout::Padding<T, E, Self, 0> { layout::Padding::new_pad(self) }
+    fn frame(self) -> layout::Padding<T, E, Self, 1> { layout::Padding::new_frame(self) }
     //interact
     fn response<'a>(self) -> interact::Response<'a, T, E, Self> where E: Clone { interact::Response::new(self) }
     //composition

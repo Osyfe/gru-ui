@@ -97,6 +97,7 @@ impl<'a> PaintCtx<'a>
 {
     #[inline] pub fn add_offset(&mut self, offset: math::Vec2) { self.painter.add_offset(offset); }
     #[inline] pub fn draw_rect(&mut self, rect: math::Rect, color: paint::Color) { self.painter.draw_rect(rect, color); }
+    #[inline] pub fn draw_frame(&mut self, outside: math::Rect, inside: math::Rect, color: paint::Color) { self.painter.draw_frame(outside, inside, color); }
     #[inline] pub fn draw_rhombus(&mut self, rect: math::Rect, color: paint::Color) { self.painter.draw_rhombus(rect, color); }
     #[inline] pub fn draw_text(&mut self, rect: math::Rect, text: &str, size: f32, align: text::Align, auto_wrap: bool, color: paint::Color) { self.painter.draw_text(rect, text, size, align, auto_wrap, color); }
 }
