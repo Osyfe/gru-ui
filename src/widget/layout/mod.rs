@@ -169,14 +169,15 @@ impl<T, E, W: Widget<T, E>> Align<T, E, W>
     pub fn center(self) -> Self { self.center_h().center_v() }
 }
 
-pub struct Padding<T, E, W: Widget<T, E>>
+pub struct Padding<T, E, W: Widget<T, E>, const COLORED: usize>
 {
     child: W,
     padding: Rect,
+    inside_size: [Vec2; COLORED],
     _phantom: PhantomData<(T, E)>
 }
 
-impl<T, E, W: Widget<T, E>> Widget<T, E> for Padding<T, E, W>
+impl<T, E, W: Widget<T, E>, const COLORED: usize> Widget<T, E> for Padding<T, E, W, COLORED>
 {
     #[inline]
     fn event(&mut self, ctx: &mut EventCtx<E>, data: &mut T)
@@ -198,6 +199,10 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Padding<T, E, W>
         let size = size - self.padding.min - self.padding.max;
         if size.0 <= 0.0 || size.1 <= 0.0 { ctx.does_not_fit(); }
         let size = self.child.layout_compute(ctx, data, size);
+        if COLORED > 0
+        {
+            self.inside_size[0] = size;
+        }
         size + self.padding.min + self.padding.max
     }
 
@@ -207,16 +212,34 @@ impl<T, E, W: Widget<T, E>> Widget<T, E> for Padding<T, E, W>
         ctx.add_offset(self.padding.min);
         self.child.paint(ctx, data);
         ctx.add_offset(-self.padding.min);
+        if COLORED > 0
+        {
+            let outside = Rect::new_origin(self.inside_size[0] + self.padding.min + self.padding.max);
+            let inside = Rect::new_size(self.padding.min, self.inside_size[0]);
+            ctx.draw_frame(outside, inside, ctx.style.top);
+        }
     }
 }
 
-impl<T, E, W: Widget<T, E>> Padding<T, E, W>
+impl<T, E, W: Widget<T, E>> Padding<T, E, W, 0>
 {
-    pub fn new(widget: W) -> Self
+    pub fn new_pad(widget: W) -> Self
     {
-        Self { child: widget, padding: Rect::new_origin(Vec2::zero()), _phantom: PhantomData }
+        Self { child: widget, padding: Rect::new_origin(Vec2::zero()), inside_size: [], _phantom: PhantomData }
     }
+}
 
+impl<T, E, W: Widget<T, E>> Padding<T, E, W, 1>
+{
+    pub fn new_frame(widget: W) -> Self
+    {
+        let inside_size = [Vec2::zero()];
+        Self { child: widget, padding: Rect::new_origin(Vec2::zero()), inside_size, _phantom: PhantomData }
+    }
+}
+
+impl<T, E, W: Widget<T, E>, const COLORED: usize> Padding<T, E, W, COLORED>
+{
     pub fn left(mut self, padding: f32) -> Self
     {
         self.padding.min.0 = padding;
