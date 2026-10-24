@@ -106,10 +106,11 @@ impl Painter
     {
         let outside = (outside + self.origin) * self.scale;
         let inside = (inside + self.origin) * self.scale;
-        // Trapezoidal pattern
-        // Vertex order (outside-inside back-and-forth) counterclockwise
+        //trapezoidal pattern
+        //vertex order (outside-inside back-and-forth) counterclockwise
         use Corner::*;
-        let all_corners = [
+        let all_corners =
+        [
             TopLeft.of(inside),      //0
             TopLeft.of(outside),     //1
             BottomLeft.of(outside),  //2
@@ -146,7 +147,10 @@ impl Painter
             Vec2(min.0 + radius.0, max.1), //bottom
             Vec2(max.0, min.1 + radius.1), //right
             Vec2(min.0 + radius.0, min.1) //top
-        ] { self.vertices.push(Vertex { position, color, tex_coords: None }); }
+        ]
+        {
+            self.vertices.push(Vertex { position, color, tex_coords: None });
+        }
         for i in [0, 1, 2, 2, 3, 0] { self.indices.push(i0 + i); }
     }
 
