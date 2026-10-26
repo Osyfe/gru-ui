@@ -95,6 +95,8 @@ impl<'a> LayoutComputeCtx<'a>
 
 impl<'a> PaintCtx<'a>
 {
+    #[inline] pub fn current_offset(&self) -> math::Vec2 { self.painter.origin() }
+    #[inline] pub fn current_scale(&self) -> f32 { self.painter.scale() }
     #[inline] pub fn add_offset(&mut self, offset: math::Vec2) { self.painter.add_offset(offset); }
     #[inline] pub fn draw_rect(&mut self, rect: math::Rect, color: paint::Color) { self.painter.draw_rect(rect, color); }
     #[inline] pub fn draw_frame(&mut self, outside: math::Rect, inside: math::Rect, color: paint::Color) { self.painter.draw_frame(outside, inside, color); }

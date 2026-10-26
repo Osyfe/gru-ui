@@ -203,6 +203,16 @@ impl Painter
         self.text.as_ref().unwrap().atlas().height(text, layout)
     }
 
+    pub fn origin(&self) -> Vec2
+    {
+        self.origin
+    }
+
+    pub fn scale(&self) -> f32
+    {
+        self.scale
+    }
+
     fn add_glyphs(&mut self, text: &str)
     {
         if self.text.as_mut().unwrap().add(text.chars()) { self.text_version += 1; }

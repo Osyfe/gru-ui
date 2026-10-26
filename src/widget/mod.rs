@@ -25,6 +25,7 @@ pub trait WidgetExt<T, E>: Widget<T, E> + Sized
     fn align(self) -> layout::Align<T, E, Self> { layout::Align::new(self) }
     fn pad(self) -> layout::Padding<T, E, Self, 0> { layout::Padding::new_pad(self) }
     fn frame(self) -> layout::Padding<T, E, Self, 1> { layout::Padding::new_frame(self) }
+    fn query<F>(self, to_event: F) -> layout::Query<T, E, Self, F> where F: Fn(&layout::QueryData) -> E { layout::Query::new(self, to_event) }
     //interact
     fn response<'a>(self) -> interact::Response<'a, T, E, Self> where E: Clone { interact::Response::new(self) }
     //composition

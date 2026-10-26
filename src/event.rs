@@ -300,6 +300,7 @@ pub enum LogicEvent<T>
 {
     Clicked(T, MouseButton),
     Pressed(T, Key, bool),
+    Query(T),
 }
 
 pub enum Event<T>

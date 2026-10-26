@@ -1,3 +1,5 @@
+mod query;
+pub use query::*;
 mod flex;
 pub use flex::*;
 
