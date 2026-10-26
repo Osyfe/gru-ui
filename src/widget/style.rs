@@ -41,17 +41,19 @@ pub trait Styling<T>
     fn style(&mut self, data: &T, style_set: &mut StyleSet);
 }
 
-impl <T, F> Styling<T> for F
+impl<T, F> Styling<T> for F
 where F: FnMut(&T, &mut StyleSet)
 {
-    fn style(&mut self, data: &T, style_set: &mut StyleSet) {
+    fn style(&mut self, data: &T, style_set: &mut StyleSet)
+    {
         (self)(data, style_set)
     }
 }
 
-impl <T> Styling<T> for StyleSet
+impl<T> Styling<T> for StyleSet
 {
-    fn style(&mut self, _data: &T, style_set: &mut StyleSet) {
+    fn style(&mut self, _data: &T, style_set: &mut StyleSet)
+    {
         style_set.clone_from(self)
     }
 }
